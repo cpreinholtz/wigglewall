@@ -15,6 +15,11 @@ License CC BY-NC 3.0
 #define SIMULATION true
 #define HARDWARE (not SIMULATION)
 
+//used for extra switches like hardware mapping, etc
+#define DEBUG true
+
+#include "debug.h"
+
 
 #if HARDWARE
 
@@ -37,6 +42,12 @@ const int numPins = 8;
 //results in T34 = O14, T33 = O13... 
 //orange, blue, green, brown, orange, blue, green, brown
 //byte pinList[numPins] = {12,34,27,28,  26,40,41,25};
+
+
+
+
+
+
 
 // wall top is  orange brown    blue green
 //pipe  top      1      8       2     7
@@ -70,6 +81,9 @@ public:
     }
 
 
+
+
+
     void copyBuffer(){
         int thisPixel = 0;
         for (int ring = 0 ; ring < nRings; ring++){
@@ -81,7 +95,7 @@ public:
                 oleds.setPixel(pixel+ring*nMaxPixels, color);
           }
         }
-    }
+    }// copyBuffer
 
 
 }; // class WiggleWall

@@ -104,6 +104,8 @@ void setup() {
         }
         animartrix.setColorOrder(static_cast<EOrder>(value));
     });
+
+    //animartrix.radial_filter_radius = animartrix.radial_filter_radius *3;
 #if HARDWARE
     wiggleWall.setup();
 #endif
@@ -124,6 +126,7 @@ void loop() {
 
 
 #if SIMULATION
+    debug();
     FastLED.show();
 #else
     wiggleWall.copyBuffer();
