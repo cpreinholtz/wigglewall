@@ -34,18 +34,29 @@ using polor polar coordinates. The effects are very complex and powerful.
 
 #include "fx/2d/animartrix.hpp"
 #include "fl/ui.h"
-
 using namespace fl;
+
+
+#define MATRIX_WIDTH 64
+#define MATRIX_HEIGHT 25
+
+#define NUM_LEDS (MATRIX_WIDTH * MATRIX_HEIGHT)
+CRGB leds[NUM_LEDS];
+
+
+
+//******************************************************************************************************************
+// must be after the leds instance
+#include "wigglewall.h" 
+//******************************************************************************************************************
+
 
 
 #define LED_PIN 3
 #define BRIGHTNESS 96
 #define COLOR_ORDER GRB
 
-#define MATRIX_WIDTH 64
-#define MATRIX_HEIGHT 25
 
-#define NUM_LEDS (MATRIX_WIDTH * MATRIX_HEIGHT)
 
 #define FIRST_ANIMATION POLAR_WAVES
 
@@ -54,7 +65,7 @@ using namespace fl;
 #define LED_DIAMETER 0.15  // .15 cm or 1.5mm
 
 
-CRGB leds[NUM_LEDS];
+
 XYMap xyMap = XYMap::constructRectangularGrid(MATRIX_WIDTH, MATRIX_HEIGHT);
 
 
@@ -69,35 +80,9 @@ UISlider timeSpeed("Time Speed", 1, -10, 10, .1);
 Animartrix animartrix(xyMap, FIRST_ANIMATION);
 FxEngine fxEngine(NUM_LEDS);
 
-
-
-#if ART_TEENSY
-
-
-// put in setup
-
-//oleds.begin();
-
-
-
-void copyBuffer(){
-    int thisPixel = 0;
-    for (int ring = 0 ; ring < nRings; ring++){
-        for (int pixel = 0; pixel < nPixelsPerRing[ring]; pixel++){
-            float r = leds[thisPixel].r;
-            float g = leds[thisPixel].g;
-            float b = leds[thisPixel].b;
-            int color = (((int)(r))<<16) | ((int)(g)<<8) | ((int)(b));
-            oleds.setPixel(pixel+ring*nMaxPixels, color);
-      }
-    }
-}
-
+#if HARDWARE
+WiggleWall wiggleWall();
 #endif
-
-
-
-
 
 void setup() {
     auto screen_map = xyMap.toScreenMap();
@@ -119,6 +104,10 @@ void setup() {
         }
         animartrix.setColorOrder(static_cast<EOrder>(value));
     });
+#if HARDWARE
+    wiggleWall.setup();
+#endif
+
 }
 
 void loop() {
@@ -131,7 +120,14 @@ void loop() {
     }
     fxEngine.draw(millis(), leds);
 
+
+
+
+#if SIMULATION
     FastLED.show();
+#else
+    wiggleWall.copyBuffer();
+#endif
 
 }
 
