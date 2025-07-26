@@ -36,29 +36,11 @@ using polor polar coordinates. The effects are very complex and powerful.
 #include "fl/ui.h"
 using namespace fl;
 
-
-#define MATRIX_WIDTH 64
-#define MATRIX_HEIGHT 25
-
-#define NUM_LEDS (MATRIX_WIDTH * MATRIX_HEIGHT)
-CRGB leds[NUM_LEDS];
-
-
-
 //******************************************************************************************************************
-// must be after the leds instance
 #include "wigglewall.h" 
 //******************************************************************************************************************
 
-
-
 #define LED_PIN 3
-#define BRIGHTNESS 96
-#define COLOR_ORDER GRB
-
-
-
-#define FIRST_ANIMATION POLAR_WAVES
 
 // This is purely use for the web compiler to display the animartrix effects.
 // This small led was chosen because otherwise the bloom effect is too strong.
@@ -66,23 +48,14 @@ CRGB leds[NUM_LEDS];
 
 
 
-XYMap xyMap = XYMap::constructRectangularGrid(MATRIX_WIDTH, MATRIX_HEIGHT);
 
-
-UITitle title("Animartrix");
-UIDescription description("Demo of the Animatrix effects. @author of fx is StefanPetrick");
-
-UISlider brightness("Brightness", 255, 0, 255);
-UINumberField fxIndex("Animartrix - index", 0, 0, NUM_ANIMATIONS - 1);
-UINumberField colorOrder("Color Order", 0, 0, 5);
-UISlider timeSpeed("Time Speed", 1, -10, 10, .1);
-
-Animartrix animartrix(xyMap, FIRST_ANIMATION);
-FxEngine fxEngine(NUM_LEDS);
 
 #if HARDWARE
 WiggleWall wiggleWall();
 #endif
+
+Manager manager;
+
 
 void setup() {
     auto screen_map = xyMap.toScreenMap();
@@ -93,18 +66,8 @@ void setup() {
     FastLED.setBrightness(brightness);
     fxEngine.addFx(animartrix);
 
-    colorOrder.onChanged([](int value) {
-        switch(value) {
-            case 0: value = RGB; break;
-            case 1: value = RBG; break;
-            case 2: value = GRB; break;
-            case 3: value = GBR; break;
-            case 4: value = BRG; break;
-            case 5: value = BGR; break;
-        }
-        animartrix.setColorOrder(static_cast<EOrder>(value));
-    });
-
+    animartrix.setColorOrder(static_cast<EOrder>(COLOR_ORDER));
+    
     //animartrix.radial_filter_radius = animartrix.radial_filter_radius *3;
 #if HARDWARE
     wiggleWall.setup();
@@ -112,18 +75,21 @@ void setup() {
 
 }
 
+
+
+int lastSlider = -1;
 void loop() {
     FastLED.setBrightness(brightness);
     fxEngine.setSpeed(timeSpeed);
-    static int lastFxIndex = -1;
-    if (fxIndex.value() != lastFxIndex) {
-        lastFxIndex = fxIndex;
-        animartrix.fxSet(fxIndex);
+    if (int(fxIndex) != lastSlider){
+        lastSlider = int(fxIndex);
+        manager.setPattern(lastSlider);
+        //animartrix.fxSet(lastSlider);
     }
+
+    manager.run();
+
     fxEngine.draw(millis(), leds);
-
-
-
 
 #if SIMULATION
     debug();

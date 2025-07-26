@@ -13,29 +13,38 @@ License CC BY-NC 3.0
 
 
 
+
+
     void debug(){
 #if DEBUG
 
     // create temporary test pattern for figuring out if the hardware is setup correctly
-    // reds create a ramp from 0 to MATRIX_WIDTH
+    // reds create a ramp increasing as index increases
     // blues create diagonal lines
     // greens are the beginning of each input strip (every 8th collumn)
-    if (millis() < 5000){
+    if (millis() < 2000){
         //figure out pixel order within the LEDs array
         //Fastest changing index seems to be width (THIS % WIDTH)
-        for (int y = 0 ; y < MATRIX_HEIGHT; y++){
-            for (int x = 0 ; x < MATRIX_WIDTH; x++){
-                int thisPixel = y*MATRIX_WIDTH+x;
-                leds[thisPixel].r = x;
+        for (int pin = 0 ; pin < NUM_PINS; pin++){
+            for (int led = 0 ; led < LEDS_PER_PIN; led++){
+                int thisPixel = pin*LEDS_PER_PIN+led;
+                leds[thisPixel].r = thisPixel*255/NUM_LEDS;
                 leds[thisPixel].b = 0;
                 leds[thisPixel].g = 0;
 
-                if( (x%MATRIX_HEIGHT)==y){
+                if(led == 0){
+                    leds[thisPixel].g = 200;
+                }
+                if(led == 1){
+                    leds[thisPixel].g = 100;
+                    leds[thisPixel].b = 100;
+                }
+                if(led == MATRIX_HEIGHT){
                     leds[thisPixel].b = 200;
                 }
-
-                if(y== 0 and (x%8) == 0){
-                    leds[thisPixel].g = 200;
+                if(led == MATRIX_HEIGHT+1){
+                    leds[thisPixel].g = 100;
+                    leds[thisPixel].b = 100;
                 }
             }
         }
