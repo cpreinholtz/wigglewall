@@ -25,8 +25,8 @@ License CC BY-NC 3.0
     #define MATRIX_WIDTH 64
     #define MATRIX_HEIGHT 25
 #else
-    #define MATRIX_WIDTH 64
-    #define MATRIX_HEIGHT 64
+    #define MATRIX_WIDTH 32
+    #define MATRIX_HEIGHT 32
 #endif
 
 #define NUM_LEDS (MATRIX_WIDTH * MATRIX_HEIGHT)

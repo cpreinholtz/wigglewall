@@ -58,17 +58,15 @@ Manager manager;
 
 
 void setup() {
+    ////////////////////////////////////////////////////////////////////////////
+    //
     auto screen_map = xyMap.toScreenMap();
     screen_map.setDiameter(LED_DIAMETER);
     FastLED.addLeds<WS2811, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS)
         .setCorrection(TypicalLEDStrip)
         .setScreenMap(screen_map);
-    FastLED.setBrightness(brightness);
-    fxEngine.addFx(animartrix);
 
-    animartrix.setColorOrder(static_cast<EOrder>(COLOR_ORDER));
-    
-    //animartrix.radial_filter_radius = animartrix.radial_filter_radius *3;
+    manager.start();
 #if HARDWARE
     wiggleWall.setup();
 #endif
@@ -78,8 +76,10 @@ void setup() {
 
 
 int lastSlider = -1;
+
 void loop() {
-    FastLED.setBrightness(brightness);
+    manager.setDesiredBrightness(brightness);
+
     fxEngine.setSpeed(timeSpeed);
     if (int(fxIndex) != lastSlider){
         lastSlider = int(fxIndex);
