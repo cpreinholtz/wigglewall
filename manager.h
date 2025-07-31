@@ -26,11 +26,11 @@ FxEngine fxEngine(NUM_LEDS);
 
 //******************************************************************************************************************
 //User Controls
-
+#if SIMULATION
 UISlider brightness("Brightness", 20, 0, 255);
 UISlider fxIndex("ANIM Index", 0, 0, NUM_ANIMATIONS - 1,1);
 UISlider timeSpeed("Time Speed", 1, -10, 10, .1);
-
+#endif
 
 //******************************************************************************************************************
 //
@@ -48,8 +48,6 @@ typedef enum {
   sFadeOut
 } envelopState;
 
-
-
 class Manager {
 public:
 
@@ -65,8 +63,6 @@ public:
     int state=sIdle;
 
     void start(){
-        fxEngine.addFx(animartrix);
-        animartrix.setColorOrder(static_cast<EOrder>(COLOR_ORDER));
         this->setBrightness(desiredBrightness);
         this->setPattern(currentAnimation);
 

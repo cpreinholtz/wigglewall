@@ -11,7 +11,7 @@ License CC BY-NC 3.0
 
 #pragma once
 
-
+#define DEBUG_MILLIS 10000
 
 
 
@@ -20,9 +20,9 @@ License CC BY-NC 3.0
 
     // create temporary test pattern for figuring out if the hardware is setup correctly
     // reds create a ramp increasing as index increases
-    // blues create diagonal lines
-    // greens are the beginning of each input strip (every 8th collumn)
-    if (millis() < 2000){
+    // greens are the beginning of each input strip and indicate which pin we are on (1 to 8)
+    // blues are on the second serpentine (this is wrong in the simulation because serpentine layout is messed up, should be top going down in hardware)
+    if (millis() < DEBUG_MILLIS){
         //figure out pixel order within the LEDs array
         //Fastest changing index seems to be width (THIS % WIDTH)
         for (int pin = 0 ; pin < NUM_PINS; pin++){
@@ -32,20 +32,25 @@ License CC BY-NC 3.0
                 leds[thisPixel].b = 0;
                 leds[thisPixel].g = 0;
 
-                if(led == 0){
+                if(led <= pin){
                     leds[thisPixel].g = 200;
                 }
-                if(led == 1){
-                    leds[thisPixel].g = 100;
-                    leds[thisPixel].b = 100;
-                }
+
+#if HARDWARE
                 if(led == MATRIX_HEIGHT){
                     leds[thisPixel].b = 200;
                 }
                 if(led == MATRIX_HEIGHT+1){
-                    leds[thisPixel].g = 100;
                     leds[thisPixel].b = 100;
                 }
+#else
+                if(led == MATRIX_HEIGHT*2-1){
+                    leds[thisPixel].b = 200;
+                }
+                if(led == MATRIX_HEIGHT*2-2){
+                    leds[thisPixel].b = 100;
+                }
+#endif
             }
         }
     }

@@ -46,12 +46,8 @@ using namespace fl;
 // This small led was chosen because otherwise the bloom effect is too strong.
 #define LED_DIAMETER 0.15  // .15 cm or 1.5mm
 
-
-
-
-
 #if HARDWARE
-WiggleWall wiggleWall();
+WiggleWall wiggleWall;
 #endif
 
 Manager manager;
@@ -79,23 +75,22 @@ int lastSlider = -1;
 
 void loop() {
     manager.setDesiredBrightness(brightness);
-
     fxEngine.setSpeed(timeSpeed);
+
     if (int(fxIndex) != lastSlider){
         lastSlider = int(fxIndex);
         manager.setPattern(lastSlider);
-        //animartrix.fxSet(lastSlider);
     }
 
     manager.run();
-
     fxEngine.draw(millis(), leds);
+    debug();
 
 #if SIMULATION
-    debug();
     FastLED.show();
 #else
     wiggleWall.copyBuffer();
+    oleds.show();
 #endif
 
 }
