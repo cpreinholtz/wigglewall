@@ -13,15 +13,12 @@ License CC BY-NC 3.0
 
 //******************************************************************************************************************
 //define running modes for simple #if compile switches
-#define SIMULATION false
-#define HARDWARE (not SIMULATION)
-
-//used for extra switches like hardware mapping, etc
-#define DEBUG true
+#define SIMULATION true
+#define NOT_SIMULATION (not SIMULATION)
 
 
 //******************************************************************************************************************
-#if HARDWARE
+#if NOT_SIMULATION
     #define MATRIX_WIDTH 64
     #define MATRIX_HEIGHT 25
 #else
@@ -33,17 +30,11 @@ License CC BY-NC 3.0
 #define NUM_PINS 8
 #define LEDS_PER_PIN (NUM_LEDS / NUM_PINS)
 
-CRGB leds[NUM_LEDS];
-
-#define COLOR_ORDER RGB
-
-
-
 #include "manager.h"
 #include "debug.h"
 
 
-#if HARDWARE
+#if NOT_SIMULATION
 
     //******************************************************************************************************************
     //Octo stuff

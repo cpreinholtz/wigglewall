@@ -15,9 +15,7 @@ License CC BY-NC 3.0
 
 
 
-    void debug(){
-#if DEBUG
-
+void debug(){
     // create temporary test pattern for figuring out if the hardware is setup correctly
     // reds create a ramp increasing as index increases
     // greens are the beginning of each input strip and indicate which pin we are on (1 to 8)
@@ -36,15 +34,15 @@ License CC BY-NC 3.0
                     leds[thisPixel].g = 200;
                 }
 
-#if HARDWARE
-                if(led == MATRIX_HEIGHT){
+#if NOT_SIMULATION
+                if(led == MATRIX_HEIGHT){ //serpentine
                     leds[thisPixel].b = 200;
                 }
                 if(led == MATRIX_HEIGHT+1){
                     leds[thisPixel].b = 100;
                 }
 #else
-                if(led == MATRIX_HEIGHT*2-1){
+                if(led == MATRIX_HEIGHT*2-1){ //regular matrix
                     leds[thisPixel].b = 200;
                 }
                 if(led == MATRIX_HEIGHT*2-2){
@@ -54,8 +52,4 @@ License CC BY-NC 3.0
             }
         }
     }
-
-
-#endif
-
-    }//debug
+}//debug

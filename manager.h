@@ -13,31 +13,8 @@ License CC BY-NC 3.0
 
 
 
-//******************************************************************************************************************
-//Animartrix and effects engine
-#if HARDWARE
-    XYMap xyMap = XYMap::constructSerpentine(MATRIX_WIDTH, MATRIX_HEIGHT);
-#else
-    XYMap xyMap = XYMap::constructRectangularGrid(MATRIX_WIDTH, MATRIX_HEIGHT);
-#endif
-
-Animartrix animartrix(xyMap, POLAR_WAVES);
-FxEngine fxEngine(NUM_LEDS);
-
-//******************************************************************************************************************
-//User Controls
-#if SIMULATION
-UISlider brightness("Brightness", 20, 0, 255);
-UISlider fxIndex("ANIM Index", 0, 0, NUM_ANIMATIONS - 1,1);
-UISlider timeSpeed("Time Speed", 1, -10, 10, .1);
-#endif
-
-//******************************************************************************************************************
-//
-
-
 // how many seconds between swapping animations
-#define ANIMATION_UPDATE_PERIOD 100
+#define ANIMATION_UPDATE_PERIOD 10
 
 // how many seconds should the brightness fade for
 #define BRIGHTNESS_FADE_MILLIS 1000
@@ -118,17 +95,17 @@ public:
 
 
     ////////////////////////////////////////////////////////////////////////////
-    // Brightness updates
+    // brightness updates
     ////////////////////////////////////////////////////////////////////////////
-    void setBrightness(int brightness){
-        brightness = constrain(brightness,0,255);
-        FastLED.setBrightness(brightness);
+    void setBrightness(int b){
+        b = constrain(b,0,255);
+        FastLED.setBrightness(b);
     }
 
 
     // allow user to set brightness but wont disrupt state machine if we are currently dimming
-    void setDesiredBrightness(int brightness){
-        desiredBrightness = constrain(brightness,0,255);
+    void setDesiredBrightness(int b){
+        desiredBrightness = constrain(b,0,255);
         if (state == sIdle) {
             setBrightness(desiredBrightness);
         }
