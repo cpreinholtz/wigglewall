@@ -41,12 +41,13 @@ using namespace fl;
 //******************************************************************************************************************
 
 #define LED_PIN 3
+#define COLOR_ORDER GRB
 
 // This is purely use for the web compiler to display the animartrix effects.
 // This small led was chosen because otherwise the bloom effect is too strong.
 #define LED_DIAMETER 0.15  // .15 cm or 1.5mm
 
-#if HARDWARE
+#if NOT_SIMULATION
 WiggleWall wiggleWall;
 #endif
 
@@ -61,9 +62,9 @@ void setup() {
     FastLED.addLeds<WS2811, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS)
         .setCorrection(TypicalLEDStrip)
         .setScreenMap(screen_map);
-
+    /////////////////////////////////////////////////////////////////////////////
     manager.start();
-#if HARDWARE
+#if NOT_SIMULATION
     wiggleWall.setup();
 #endif
 
@@ -82,6 +83,7 @@ void loop() {
         manager.setPattern(lastSlider);
     }
 
+    /////////////////////////////////////////////////////////////////////////////
     manager.run();
     fxEngine.draw(millis(), leds);
     debug();

@@ -11,7 +11,23 @@ License CC BY-NC 3.0
 
 #pragma once
 
+/////////////////////////////////////////////////////////////////////////////
+CRGB leds[NUM_LEDS];
+XYMap xyMap = XYMap::constructRectangularGrid(MATRIX_WIDTH, MATRIX_HEIGHT);
 
+
+UITitle title("Animartrix");
+UIDescription description("Demo of the Animatrix effects. @author of fx is StefanPetrick");
+
+UISlider brightness("Brightness", 255, 0, 255);
+UINumberField fxIndex("Animartrix - index", 0, 0, NUM_ANIMATIONS - 1);
+UINumberField colorOrder("Color Order", 0, 0, 5);
+UISlider timeSpeed("Time Speed", 1, -10, 10, .1);
+
+Animartrix animartrix(xyMap, POLAR_WAVES);
+FxEngine fxEngine(NUM_LEDS);
+
+/////////////////////////////////////////////////////////////////////////////
 
 // how many seconds between swapping animations
 #define ANIMATION_UPDATE_PERIOD 10
