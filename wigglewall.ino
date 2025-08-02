@@ -23,7 +23,6 @@ This is the famouse Animartrix demo by Stefan Petrick. The effects are generated
 using polor polar coordinates. The effects are very complex and powerful.
 */
 
-
 #include <stdio.h>
 #include <string>
 
@@ -34,72 +33,82 @@ using polor polar coordinates. The effects are very complex and powerful.
 
 #include "fx/2d/animartrix.hpp"
 #include "fl/ui.h"
+
 using namespace fl;
 
-//******************************************************************************************************************
-#include "wigglewall.h" 
-//******************************************************************************************************************
 
-#define LED_PIN 12
+#define LED_PIN 3
+#define BRIGHTNESS 96
 #define COLOR_ORDER GRB
+
+#define MATRIX_WIDTH 32
+#define MATRIX_HEIGHT 32
+
+#define NUM_LEDS (MATRIX_WIDTH * MATRIX_HEIGHT)
+
+#define FIRST_ANIMATION POLAR_WAVES
 
 // This is purely use for the web compiler to display the animartrix effects.
 // This small led was chosen because otherwise the bloom effect is too strong.
 #define LED_DIAMETER 0.15  // .15 cm or 1.5mm
 
 
-#if NOT_SIMULATION
-WiggleWall wiggleWall;
-#endif
+CRGB leds[NUM_LEDS];
+XYMap xyMap = XYMap::constructRectangularGrid(MATRIX_WIDTH, MATRIX_HEIGHT);
+
+
+UITitle title("Animartrix");
+UIDescription description("Demo of the Animatrix effects. @author of fx is StefanPetrick");
+
+UISlider brightness("Brightness", 255, 0, 255);
+UINumberField fxIndex("Animartrix - index", 0, 0, NUM_ANIMATIONS - 1);
+UINumberField colorOrder("Color Order", 0, 0, 5);
+UISlider timeSpeed("Time Speed", 1, -10, 10, .1);
+
+Animartrix animartrix(xyMap, FIRST_ANIMATION);
+FxEngine fxEngine(NUM_LEDS);
+
+/////////////////////////////////////////////////////////////////////////////
+#include "manager.h"
 
 Manager manager;
 
-
 void setup() {
-    ////////////////////////////////////////////////////////////////////////////
-    //
     auto screen_map = xyMap.toScreenMap();
     screen_map.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2811, LED_PIN>(leds, NUM_LEDS)
+    FastLED.addLeds<WS2811, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS)
         .setCorrection(TypicalLEDStrip)
         .setScreenMap(screen_map);
-    /////////////////////////////////////////////////////////////////////////////
-    Serial.begin(115200);
-    manager.start();
-#if NOT_SIMULATION
-    wiggleWall.setup();
-    Serial.println("startup");
-#endif
+    FastLED.setBrightness(brightness);
+    fxEngine.addFx(animartrix);
 
+    colorOrder.onChanged([](int value) {
+        switch(value) {
+            case 0: value = RGB; break;
+            case 1: value = RBG; break;
+            case 2: value = GRB; break;
+            case 3: value = GBR; break;
+            case 4: value = BRG; break;
+            case 5: value = BGR; break;
+        }
+        animartrix.setColorOrder(static_cast<EOrder>(value));
+    });
 }
-
-
-
-int lastSlider = -1;
 
 void loop() {
-    manager.setDesiredBrightness(100);
-    fxEngine.setSpeed(1);
-
-    if (int(fxIndex) != lastSlider){
-        lastSlider = int(fxIndex);
-        manager.setPattern(lastSlider);
+    EVERY_N_MILLIS(100) manager.setDesiredBrightness(brightness);
+    EVERY_N_MILLIS(100) manager.setSpeed(timeSpeed);
+    static int lastFxIndex = -1;
+    if (fxIndex.value() != lastFxIndex) {
+        lastFxIndex = fxIndex;
+        manager.fxSet(fxIndex);
+        animartrix.fxSet(manager.currentAnimation);
     }
+    fxEngine.draw(millis(), leds);
+    FastLED.show();
 
     /////////////////////////////////////////////////////////////////////////////
-    manager.run();
-    fxEngine.draw(millis(), leds);
-    debug();
 
-#if SIMULATION
-    FastLED.show();
-#else
-    wiggleWall.copyBuffer();
-    oleds.show();
-    EVERY_N_SECONDS(2) {Serial.println("checkin");}
-
-#endif
-
+    FastLED.setBrightness(manager.currentBrightness);
+    fxEngine.setSpeed(manager.timeSpeed);
 }
-
-

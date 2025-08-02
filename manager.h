@@ -12,23 +12,6 @@ License CC BY-NC 3.0
 #pragma once
 
 /////////////////////////////////////////////////////////////////////////////
-CRGB leds[NUM_LEDS];
-
-XYMap xyMap = XYMap::constructRectangularGrid(MATRIX_WIDTH, MATRIX_HEIGHT);
-
-
-UITitle title("Animartrix");
-UIDescription description("Demo of the Animatrix effects. @author of fx is StefanPetrick");
-
-UISlider brightness("Brightness", 255, 0, 255);
-UINumberField fxIndex("Animartrix - index", 0, 0, NUM_ANIMATIONS - 1);
-UINumberField colorOrder("Color Order", 0, 0, 5);
-UISlider timeSpeed("Time Speed", 1, -10, 10, .1);
-
-Animartrix animartrix(xyMap, POLAR_WAVES);
-FxEngine fxEngine(NUM_LEDS);
-
-/////////////////////////////////////////////////////////////////////////////
 
 // how many seconds between swapping animations
 #define ANIMATION_UPDATE_PERIOD 10
@@ -50,7 +33,12 @@ public:
     int currentAnimation = 0;
 
     //brightness
+    bool doBrightnessTransitions = true;
     int desiredBrightness = 100;
+    int currentBrightness = 100;
+
+    //speed
+    float timeSpeed = 1.0;
 
     // state machine
     unsigned long startMillis = 0;
@@ -58,8 +46,7 @@ public:
 
     void start(){
         this->setBrightness(desiredBrightness);
-        this->setPattern(currentAnimation);
-
+        this->setPatternNow(currentAnimation);
     }
 
     void run(){
@@ -79,9 +66,13 @@ public:
     ////////////////////////////////////////////////////////////////////////////
     void trigger(){
         if (state == sIdle){
-            startMillis = millis();
-            state = sFadeOut;
-            Serial.println("trigger");
+            if (doBrightnessTransitions){
+                startMillis = millis();
+                state = sFadeOut;
+                Serial.println("trigger");
+            } else {
+                randomPattern();
+            }
         }
     }
 
@@ -120,9 +111,8 @@ public:
     ////////////////////////////////////////////////////////////////////////////
     void setBrightness(int b){
         b = constrain(b,0,255);
-        FastLED.setBrightness(b);
+        currentBrightness = b;
     }
-
 
     // allow user to set brightness but wont disrupt state machine if we are currently dimming
     void setDesiredBrightness(int b){
@@ -130,7 +120,7 @@ public:
         if (state == sIdle) {
             setBrightness(desiredBrightness);
         }
-        Serial.print("Setting desired brighness to: ");
+        Serial.print("Setting desired brightness to: ");
         Serial.println(b);
     }
 
@@ -140,14 +130,29 @@ public:
     ////////////////////////////////////////////////////////////////////////////
     // randomly update animation
     void randomPattern(){
-        setPattern(random(NUM_ANIMATIONS));
+        setPatternNow(random(NUM_ANIMATIONS));
     }
+
     //set animation to a certain index
-    void setPattern(int i){
+    void setPatternNow(int i){
         currentAnimation = constrain(i,0,NUM_ANIMATIONS-1);
-        animartrix.fxSet(currentAnimation);
-        Serial.print("Setting pattern to: ");
+        Serial.print("Setting current pattern to: ");
         Serial.println(currentAnimation);
+    }    
+
+    //set animation to a certain index
+    void fxSet(int i){
+        setPatternNow(i);
+    }
+
+
+    /////////////////////////////////////////////////////////////////////////////
+    // speed Updates
+    /////////////////////////////////////////////////////////////////////////////
+    void setSpeed(float t){
+        timeSpeed = t;
+        Serial.print("Setting timeSpeed to: ");
+        Serial.println(timeSpeed);
     }
 
 };
