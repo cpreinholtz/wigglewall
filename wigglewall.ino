@@ -60,7 +60,7 @@ XYMap xyMap = XYMap::constructRectangularGrid(MATRIX_WIDTH, MATRIX_HEIGHT);
 UITitle title("Animartrix");
 UIDescription description("Demo of the Animatrix effects. @author of fx is StefanPetrick");
 
-UISlider brightness("Brightness", 255, 0, 255);
+UISlider brightness("Brightness", 255, 0, 255, 1);
 UINumberField fxIndex("Animartrix - index", 0, 0, NUM_ANIMATIONS - 1);
 UINumberField colorOrder("Color Order", 0, 0, 5);
 UISlider timeSpeed("Time Speed", 1, -10, 10, .1);
@@ -101,14 +101,19 @@ void loop() {
     static int lastFxIndex = -1;
     if (fxIndex.value() != lastFxIndex) {
         lastFxIndex = fxIndex;
-        manager.fxSet(fxIndex);
-        animartrix.fxSet(manager.currentAnimation);
+        manager.setPattern(fxIndex);
     }
     fxEngine.draw(millis(), leds);
     FastLED.show();
 
     /////////////////////////////////////////////////////////////////////////////
+    //use manager values to update brightness etc for next frame
+    /////////////////////////////////////////////////////////////////////////////
+    manager.run();
 
+    if (manager.clearAnimationChanged()){
+        animartrix.fxSet(manager.currentAnimation);
+    }
     FastLED.setBrightness(manager.currentBrightness);
     fxEngine.setSpeed(manager.timeSpeed);
 }

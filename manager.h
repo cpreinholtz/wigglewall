@@ -31,6 +31,7 @@ public:
     //animation
     bool doAnimationUpdates = true;
     int currentAnimation = 0;
+    bool animationChanged = true;
 
     //brightness
     bool doBrightnessTransitions = true;
@@ -46,7 +47,7 @@ public:
 
     void start(){
         this->setBrightness(desiredBrightness);
-        this->setPatternNow(currentAnimation);
+        this->setPattern(currentAnimation);
     }
 
     void run(){
@@ -69,7 +70,7 @@ public:
             if (doBrightnessTransitions){
                 startMillis = millis();
                 state = sFadeOut;
-                Serial.println("trigger");
+                //Serial.println("trigger");
             } else {
                 randomPattern();
             }
@@ -87,7 +88,7 @@ public:
             randomPattern();
             state = sFadeIn;
             startMillis = millis();
-            Serial.println("done1");
+            //Serial.println("done1");
         }
     }
 
@@ -99,7 +100,7 @@ public:
         } else {
             setBrightness(desiredBrightness);
             state = sIdle;
-            Serial.println("done2");
+            //Serial.println("done2");
 
         }
     }
@@ -120,8 +121,8 @@ public:
         if (state == sIdle) {
             setBrightness(desiredBrightness);
         }
-        Serial.print("Setting desired brightness to: ");
-        Serial.println(b);
+        //Serial.print("Setting desired brightness to: ");
+        //Serial.println(b);
     }
 
 
@@ -130,19 +131,25 @@ public:
     ////////////////////////////////////////////////////////////////////////////
     // randomly update animation
     void randomPattern(){
-        setPatternNow(random(NUM_ANIMATIONS));
+        setPattern(random(NUM_ANIMATIONS));
     }
 
     //set animation to a certain index
-    void setPatternNow(int i){
+    void setPattern(int i){
         currentAnimation = constrain(i,0,NUM_ANIMATIONS-1);
-        Serial.print("Setting current pattern to: ");
-        Serial.println(currentAnimation);
-    }    
+        animationChanged = true;
+        //Serial.print("Setting current pattern to: ");
+        //Serial.println(currentAnimation);
+    }
 
-    //set animation to a certain index
-    void fxSet(int i){
-        setPatternNow(i);
+    //return animation changed previous value and clear it in the process
+    bool clearAnimationChanged(){
+        if (animationChanged){
+            animationChanged = false;
+            return true;
+        } else {
+            return false;
+        }
     }
 
 
@@ -151,8 +158,8 @@ public:
     /////////////////////////////////////////////////////////////////////////////
     void setSpeed(float t){
         timeSpeed = t;
-        Serial.print("Setting timeSpeed to: ");
-        Serial.println(timeSpeed);
+        //Serial.print("Setting timeSpeed to: ");
+        //Serial.println(timeSpeed);
     }
 
 };
