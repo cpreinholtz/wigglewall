@@ -13,7 +13,7 @@ License CC BY-NC 3.0
 
 //******************************************************************************************************************
 //define running modes for simple #if compile switches
-#define SIMULATION false
+#define SIMULATION true
 #define NOT_SIMULATION (not SIMULATION)
 
 

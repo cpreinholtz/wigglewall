@@ -11,7 +11,7 @@ License CC BY-NC 3.0
 
 #pragma once
 
-#define DEBUG_MILLIS 10000
+#define DEBUG_MILLIS 1
 
 
 

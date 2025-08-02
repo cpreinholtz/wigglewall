@@ -13,6 +13,7 @@ License CC BY-NC 3.0
 
 /////////////////////////////////////////////////////////////////////////////
 CRGB leds[NUM_LEDS];
+
 XYMap xyMap = XYMap::constructRectangularGrid(MATRIX_WIDTH, MATRIX_HEIGHT);
 
 
@@ -80,6 +81,7 @@ public:
         if (state == sIdle){
             startMillis = millis();
             state = sFadeOut;
+            Serial.println("trigger");
         }
     }
 
@@ -94,6 +96,7 @@ public:
             randomPattern();
             state = sFadeIn;
             startMillis = millis();
+            Serial.println("done1");
         }
     }
 
@@ -105,6 +108,8 @@ public:
         } else {
             setBrightness(desiredBrightness);
             state = sIdle;
+            Serial.println("done2");
+
         }
     }
 
@@ -125,6 +130,8 @@ public:
         if (state == sIdle) {
             setBrightness(desiredBrightness);
         }
+        Serial.print("Setting desired brighness to: ");
+        Serial.println(b);
     }
 
 
@@ -139,6 +146,8 @@ public:
     void setPattern(int i){
         currentAnimation = constrain(i,0,NUM_ANIMATIONS-1);
         animartrix.fxSet(currentAnimation);
+        Serial.print("Setting pattern to: ");
+        Serial.println(currentAnimation);
     }
 
 };

@@ -40,12 +40,13 @@ using namespace fl;
 #include "wigglewall.h" 
 //******************************************************************************************************************
 
-#define LED_PIN 3
+#define LED_PIN 12
 #define COLOR_ORDER GRB
 
 // This is purely use for the web compiler to display the animartrix effects.
 // This small led was chosen because otherwise the bloom effect is too strong.
 #define LED_DIAMETER 0.15  // .15 cm or 1.5mm
+
 
 #if NOT_SIMULATION
 WiggleWall wiggleWall;
@@ -59,13 +60,15 @@ void setup() {
     //
     auto screen_map = xyMap.toScreenMap();
     screen_map.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2811, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS)
+    FastLED.addLeds<WS2811, LED_PIN>(leds, NUM_LEDS)
         .setCorrection(TypicalLEDStrip)
         .setScreenMap(screen_map);
     /////////////////////////////////////////////////////////////////////////////
+    Serial.begin(115200);
     manager.start();
 #if NOT_SIMULATION
     wiggleWall.setup();
+    Serial.println("startup");
 #endif
 
 }
@@ -75,8 +78,8 @@ void setup() {
 int lastSlider = -1;
 
 void loop() {
-    manager.setDesiredBrightness(brightness);
-    fxEngine.setSpeed(timeSpeed);
+    manager.setDesiredBrightness(100);
+    fxEngine.setSpeed(1);
 
     if (int(fxIndex) != lastSlider){
         lastSlider = int(fxIndex);
@@ -93,6 +96,8 @@ void loop() {
 #else
     wiggleWall.copyBuffer();
     oleds.show();
+    EVERY_N_SECONDS(2) {Serial.println("checkin");}
+
 #endif
 
 }
