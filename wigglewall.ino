@@ -39,13 +39,20 @@ using polor polar coordinates. The effects are very complex and powerful.
 
 using namespace fl;
 
-
-#define LED_PIN 12
+#define LED_PIN 3
+#define LED_PIN0 12
+#define LED_PIN1 40
+#define LED_PIN2 27
+#define LED_PIN3 25
+#define LED_PIN4 26
+#define LED_PIN5 34
+#define LED_PIN6 41
+#define LED_PIN7 28
 #define BRIGHTNESS 96
 #define COLOR_ORDER GRB
 
 //NOTE REQUIRES REDEFINING THE radial_filter_radius:::       if (w > h) { this->radial_filter_radius = int(float(w)*23.0/32.0); } else { this->radial_filter_radius = int(float(h)*23.0/32.0); }
-#define MATRIX_WIDTH 25
+#define MATRIX_WIDTH 64
 #define MATRIX_HEIGHT 25
 
 #define NUM_LEDS (MATRIX_WIDTH * MATRIX_HEIGHT)
@@ -59,14 +66,15 @@ using namespace fl;
 /////////////////////////////////////////////////////////////////////////////
 #include "map.h"
 CRGB leds[NUM_LEDS];
-CRGB leds0[200];
+CRGB leds_pin[8][200];
 CRGB ledsFull[1600];
 XYMap xyMap = XYMap::constructRectangularGrid(MATRIX_WIDTH, MATRIX_HEIGHT);
+XYMap xyMapFull = XYMap::constructRectangularGrid(64, 25);
+XYMap xyMap_pin = XYMap::constructSerpentine(8, 25);
 //XYMap xyMap = XYMap::constructSerpentine(MATRIX_WIDTH, MATRIX_HEIGHT);
-XYMap xyMap0 = XYMap::constructSerpentine(8, 25);
-XYMap xyMapFull = XYMap::constructSerpentine(64, 25);
 //XYMap xyMap = XYMap::constructWithUserFunction(MATRIX_WIDTH, MATRIX_HEIGHT, XY);
 //XYMap xyMap = XYMap::constructWithLookUpTable(MATRIX_WIDTH, MATRIX_HEIGHT, XYTable);
+
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -94,12 +102,56 @@ void setup() {
     animartrix.setColorOrder(static_cast<EOrder>(COLOR_ORDER));
 
     /////////////////////////////////////////////////////////////////////////////
-/*
-    auto screen_map0 = xyMap0.toScreenMap();
-    screen_map0.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2811, LED_PIN, COLOR_ORDER>(leds0, 25*8)
+
+
+    auto screen_map_pin0 = xyMap_pin.toScreenMap();
+    screen_map_pin0.setDiameter(LED_DIAMETER);
+    FastLED.addLeds<WS2811, LED_PIN0, COLOR_ORDER>(leds_pin[0], 25*8)
         .setCorrection(TypicalLEDStrip)
-        .setScreenMap(screen_map0);    */
+        .setScreenMap(screen_map_pin0);    
+
+    auto screen_map_pin1 = xyMap_pin.toScreenMap();
+    screen_map_pin1.setDiameter(LED_DIAMETER);
+    FastLED.addLeds<WS2811, LED_PIN1, COLOR_ORDER>(leds_pin[1], 25*8)
+        .setCorrection(TypicalLEDStrip)
+        .setScreenMap(screen_map_pin1);    
+
+    auto screen_map_pin2 = xyMap_pin.toScreenMap();
+    screen_map_pin2.setDiameter(LED_DIAMETER);
+    FastLED.addLeds<WS2811, LED_PIN2, COLOR_ORDER>(leds_pin[2], 25*8)
+        .setCorrection(TypicalLEDStrip)
+        .setScreenMap(screen_map_pin2);
+
+    auto screen_map_pin3 = xyMap_pin.toScreenMap();
+    screen_map_pin3.setDiameter(LED_DIAMETER);
+    FastLED.addLeds<WS2811, LED_PIN3, COLOR_ORDER>(leds_pin[3], 25*8)
+        .setCorrection(TypicalLEDStrip)
+        .setScreenMap(screen_map_pin3);
+
+    auto screen_map_pin4 = xyMap_pin.toScreenMap();
+    screen_map_pin4.setDiameter(LED_DIAMETER);
+    FastLED.addLeds<WS2811, LED_PIN4, COLOR_ORDER>(leds_pin[4], 25*8)
+        .setCorrection(TypicalLEDStrip)
+        .setScreenMap(screen_map_pin4);
+
+    auto screen_map_pin5 = xyMap_pin.toScreenMap();
+    screen_map_pin5.setDiameter(LED_DIAMETER);
+    FastLED.addLeds<WS2811, LED_PIN5, COLOR_ORDER>(leds_pin[5], 25*8)
+        .setCorrection(TypicalLEDStrip)
+        .setScreenMap(screen_map_pin5);
+
+    auto screen_map_pin6 = xyMap_pin.toScreenMap();
+    screen_map_pin6.setDiameter(LED_DIAMETER);
+    FastLED.addLeds<WS2811, LED_PIN6, COLOR_ORDER>(leds_pin[6], 25*8)
+        .setCorrection(TypicalLEDStrip)
+        .setScreenMap(screen_map_pin6);
+
+    auto screen_map_pin7 = xyMap_pin.toScreenMap();
+    screen_map_pin7.setDiameter(LED_DIAMETER);
+    FastLED.addLeds<WS2811, LED_PIN7, COLOR_ORDER>(leds_pin[7], 25*8)
+        .setCorrection(TypicalLEDStrip)
+        .setScreenMap(screen_map_pin7);
+
 
     auto screen_mapFull = xyMapFull.toScreenMap();
     screen_mapFull.setDiameter(LED_DIAMETER);
@@ -114,8 +166,9 @@ void setup() {
 
 void loop() {
     /////////////////////////////////////////////////////////////////////////////
-    static unsigned long startMillis = millis();
+    // Draw the animation in 25x25 space
     /////////////////////////////////////////////////////////////////////////////
+    static unsigned long startMillis = millis();
     EVERY_N_MILLIS(100) manager.setDesiredBrightness(brightness);
     EVERY_N_MILLIS(100) manager.setSpeed(timeSpeed);
     static int lastFxIndex = -1;
@@ -124,32 +177,36 @@ void loop() {
         manager.setPattern(fxIndex);
     }
     fxEngine.draw(millis(), leds);
-
     static unsigned long drawMillis = millis();//////////////
 
-    /*
-    for (int y = 0; y < 25; y++){
-        for (int x = 0; x < 8; x++){
-            int xx = 32-4+x;
-            int yy = 32-12+y;
-            //copy just the middle of the 64x64 to leds0 as a test
-            leds0[xyMap0(x,y)] = leds[xyMap(xx,yy)];
-        }
-    }*/
-
-    upscale(leds, ledsFull, MATRIX_WIDTH, MATRIX_HEIGHT, xyMapFull);
-    
-    CHSV hsv[1600];
+    /////////////////////////////////////////////////////////////////////////////
+    // apply hue shift on the smaller 25x25 image
+    /////////////////////////////////////////////////////////////////////////////
+    CHSV hsv[NUM_LEDS];
     static uint8_t hueOffset = 0;
-    for (int y = 0; y < 1600; y++){
-        hsv[y] = rgb2hsv_approximate(ledsFull[y]);
+    for (int y = 0; y < NUM_LEDS; y++){
+        hsv[y] = rgb2hsv_approximate(leds[y]);
         hsv[y].h = hsv[y].h + hueOffset;
-
-
     }
-    hsv2rgb_rainbow(hsv, ledsFull, 1600);
+    hsv2rgb_rainbow(hsv, leds, NUM_LEDS);
     EVERY_N_MILLIS(10) hueOffset++;
 
+    /////////////////////////////////////////////////////////////////////////////
+    // Upscale the animation to 64x25
+    /////////////////////////////////////////////////////////////////////////////
+    upscale(leds, ledsFull, MATRIX_WIDTH, MATRIX_HEIGHT, xyMapFull);
+
+    /////////////////////////////////////////////////////////////////////////////
+    // Split the image into its output pins and associated leds variables
+    /////////////////////////////////////////////////////////////////////////////
+    for (int pin = 0; pin <2; pin++){
+        for (int y = 0; y < 25; y++){
+            for (int x = 0; x < 8; x++){
+                int xx = pin * 8 + x;
+                leds_pin[pin][xyMap_pin(x,y)] = ledsFull[xyMapFull(xx,y)];
+            }
+        }
+    }
 
 
     static unsigned long copyMillis = millis();//////////////
