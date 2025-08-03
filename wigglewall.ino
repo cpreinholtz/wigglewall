@@ -35,6 +35,7 @@ using polor polar coordinates. The effects are very complex and powerful.
 #include "fx/2d/animartrix.hpp"
 #include "fl/ui.h"
 #include "fl/upscale.h"
+#include "hsv2rgb.h"
 
 using namespace fl;
 
@@ -69,12 +70,8 @@ XYMap xyMapFull = XYMap::constructSerpentine(64, 25);
 /////////////////////////////////////////////////////////////////////////////
 
 
-UITitle title("Animartrix");
-UIDescription description("Demo of the Animatrix effects. @author of fx is StefanPetrick");
-
-UISlider brightness("Brightness", 255, 0, 255);
-UINumberField fxIndex("Animartrix - index", 0, 0, NUM_ANIMATIONS - 1);
-UINumberField colorOrder("Color Order", 0, 0, 5);
+UISlider brightness("Brightness", 100, 0, 255, 1);
+UISlider fxIndex("Animation", 0, 0, NUM_ANIMATIONS - 1, 1);
 UISlider timeSpeed("Time Speed", 1, -10, 10, .1);
 
 Animartrix animartrix(xyMap, FIRST_ANIMATION);
@@ -93,17 +90,9 @@ void setup() {
     //FastLED.setBrightness(brightness);
     fxEngine.addFx(animartrix);
 
-    colorOrder.onChanged([](int value) {
-        switch(value) {
-            case 0: value = RGB; break;
-            case 1: value = RBG; break;
-            case 2: value = GRB; break;
-            case 3: value = GBR; break;
-            case 4: value = BRG; break;
-            case 5: value = BGR; break;
-        }
-        animartrix.setColorOrder(static_cast<EOrder>(value));
-    });
+
+    animartrix.setColorOrder(static_cast<EOrder>(COLOR_ORDER));
+
     /////////////////////////////////////////////////////////////////////////////
 /*
     auto screen_map0 = xyMap0.toScreenMap();
@@ -149,6 +138,19 @@ void loop() {
     }*/
 
     upscale(leds, ledsFull, MATRIX_WIDTH, MATRIX_HEIGHT, xyMapFull);
+    
+    CHSV hsv[1600];
+    static uint8_t hueOffset = 0;
+    for (int y = 0; y < 1600; y++){
+        hsv[y] = rgb2hsv_approximate(ledsFull[y]);
+        hsv[y].h = hsv[y].h + hueOffset;
+
+
+    }
+    hsv2rgb_rainbow(hsv, ledsFull, 1600);
+    EVERY_N_MILLIS(10) hueOffset++;
+
+
 
     static unsigned long copyMillis = millis();//////////////
     FastLED.show();
@@ -165,18 +167,20 @@ void loop() {
     fxEngine.setSpeed(manager.timeSpeed);
 
     static unsigned long endMillis = millis();
-    EVERY_N_MILLIS(1000) Serial.print("FPS: ");
-    EVERY_N_MILLIS(1000) Serial.print(1000.0/float(endMillis - startMillis));
+    EVERY_N_MILLIS(1000) {
+        Serial.print("FPS: ");
+        Serial.print(1000.0/float(endMillis - startMillis));
 
-    EVERY_N_MILLIS(1000) Serial.print(", draw time: ");
-    EVERY_N_MILLIS(1000) Serial.print(drawMillis - startMillis);    
+        Serial.print(", draw time: ");
+        Serial.print(drawMillis - startMillis);
 
-    EVERY_N_MILLIS(1000) Serial.print(", draw time: ");
-    EVERY_N_MILLIS(1000) Serial.print(copyMillis - drawMillis);
+        Serial.print(", copy time: ");
+        Serial.print(copyMillis - drawMillis);
 
 
-    EVERY_N_MILLIS(1000) Serial.print(", push time: ");
-    EVERY_N_MILLIS(1000) Serial.println(endMillis - copyMillis);
+        Serial.print(", push time: ");
+        Serial.println(endMillis - copyMillis);
+    }
     
 }
 
