@@ -42,8 +42,9 @@ using namespace fl;
 #define BRIGHTNESS 96
 #define COLOR_ORDER GRB
 
+//NOTE REQUIRES REDEFINING THE radial_filter_radius:::       if (w > h) { this->radial_filter_radius = int(float(w)*23.0/32.0); } else { this->radial_filter_radius = int(float(h)*23.0/32.0); }
 #define MATRIX_WIDTH 64
-#define MATRIX_HEIGHT 25
+#define MATRIX_HEIGHT 64
 
 #define NUM_LEDS (MATRIX_WIDTH * MATRIX_HEIGHT)
 
@@ -56,10 +57,12 @@ using namespace fl;
 /////////////////////////////////////////////////////////////////////////////
 #include "map.h"
 CRGB leds[NUM_LEDS];
+CRGB leds0[200];
 //XYMap xyMap = XYMap::constructRectangularGrid(MATRIX_WIDTH, MATRIX_HEIGHT);
-//XYMap xyMap = XYMap::constructSerpentine(MATRIX_WIDTH, MATRIX_HEIGHT);
+XYMap xyMap = XYMap::constructSerpentine(MATRIX_WIDTH, MATRIX_HEIGHT);
+XYMap xyMap0 = XYMap::constructSerpentine(8, 25);
 //XYMap xyMap = XYMap::constructWithUserFunction(MATRIX_WIDTH, MATRIX_HEIGHT, XY);
-XYMap xyMap = XYMap::constructWithLookUpTable(MATRIX_WIDTH, MATRIX_HEIGHT, XYTable);
+//XYMap xyMap = XYMap::constructWithLookUpTable(MATRIX_WIDTH, MATRIX_HEIGHT, XYTable);
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -74,14 +77,17 @@ UISlider timeSpeed("Time Speed", 1, -10, 10, .1);
 Animartrix animartrix(xyMap, FIRST_ANIMATION);
 FxEngine fxEngine(NUM_LEDS);
 
+/////////////////////////////////////////////////////////////////////////////
+#include "manager.h"
+Manager manager;
 
 void setup() {
-    auto screen_map = xyMap.toScreenMap();
-    screen_map.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2811, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS)
-        .setCorrection(TypicalLEDStrip)
-        .setScreenMap(screen_map);
-    FastLED.setBrightness(brightness);
+    //auto screen_map = xyMap.toScreenMap();
+    //screen_map.setDiameter(LED_DIAMETER);
+    //FastLED.addLeds<WS2811, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS)
+        //.setCorrection(TypicalLEDStrip)
+        //.setScreenMap(screen_map);
+    //FastLED.setBrightness(brightness);
     fxEngine.addFx(animartrix);
 
     colorOrder.onChanged([](int value) {
@@ -95,17 +101,64 @@ void setup() {
         }
         animartrix.setColorOrder(static_cast<EOrder>(value));
     });
+    /////////////////////////////////////////////////////////////////////////////
+
+    auto screen_map0 = xyMap0.toScreenMap();
+    screen_map0.setDiameter(LED_DIAMETER);
+    FastLED.addLeds<WS2811, LED_PIN, COLOR_ORDER>(leds0, 25*8)
+        .setCorrection(TypicalLEDStrip)
+        .setScreenMap(screen_map0);
+    FastLED.setBrightness(brightness);
+    Serial.begin(115200);
 }
 
 void loop() {
-    FastLED.setBrightness(brightness);
-    fxEngine.setSpeed(timeSpeed);
+    /////////////////////////////////////////////////////////////////////////////
+    static unsigned long startMillis = millis();
+    /////////////////////////////////////////////////////////////////////////////
+    EVERY_N_MILLIS(100) manager.setDesiredBrightness(brightness);
+    EVERY_N_MILLIS(100) manager.setSpeed(timeSpeed);
     static int lastFxIndex = -1;
     if (fxIndex.value() != lastFxIndex) {
         lastFxIndex = fxIndex;
-        animartrix.fxSet(fxIndex);
+        manager.setPattern(fxIndex);
     }
     fxEngine.draw(millis(), leds);
+
+    static unsigned long drawMillis = millis();//////////////
+
+
+    for (int y = 0; y < 25; y++){
+        for (int x = 0; x < 8; x++){
+            int xx = 32-4+x;
+            int yy = 32-12+y;
+            //copy just the middle of the 64x64 to leds0 as a test
+            leds0[xyMap0(x,y)] = leds[xyMap(xx,yy)];
+        }
+    }
     FastLED.show();
+
+    /////////////////////////////////////////////////////////////////////////////
+    //use manager values to update brightness etc for next frame
+    /////////////////////////////////////////////////////////////////////////////
+    manager.run();
+
+    if (manager.clearAnimationChanged()){
+        animartrix.fxSet(manager.currentAnimation);
+    }
+    FastLED.setBrightness(manager.currentBrightness);
+    fxEngine.setSpeed(manager.timeSpeed);
+
+    static unsigned long endMillis = millis();
+    EVERY_N_MILLIS(1000) Serial.print("FPS: ");
+    EVERY_N_MILLIS(1000) Serial.print(1000.0/float(endMillis - startMillis));
+
+    EVERY_N_MILLIS(1000) Serial.print(", draw time: ");
+    EVERY_N_MILLIS(1000) Serial.print(drawMillis - startMillis);
+
+
+    EVERY_N_MILLIS(1000) Serial.print(", push time: ");
+    EVERY_N_MILLIS(1000) Serial.println(endMillis - drawMillis);
+    
 }
 

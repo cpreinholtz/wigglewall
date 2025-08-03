@@ -1,16 +1,23 @@
 # TOP PRIORITY TODO's
  - port example for OCTO output!!!!
-    - try 25x64 wall dimensions
-    - try serpentine xymap
-    - why is instantiating octo class breaking the hardware output?
-    - can I just use single or 8 fastled outputs???
-    - need to figure out how to change radial filter radias???!!!!
+    - try paralelle teensy outputs https://github.com/FastLED/FastLED/blob/master/examples/TeensyMassiveParallel/TeensyMassiveParallel.ino
     - port / fix for your weird mapping!!! (maybe just make serpentine for simplicity!!)
- - re-add hue shifting
 
  - beeping is due to XY map being non square!!!!
-    trying my own map here https://forum.arduino.cc/t/irregular-shape-led-matrix/1172989/8  https://macetech.github.io/FastLED-XY-Map-Generator/
+    - XXX trying my own map using these https://forum.arduino.cc/t/irregular-shape-led-matrix/1172989/8  https://macetech.github.io/FastLED-XY-Map-Generator/
+    - try 25x25 with upscale
+    - try 64x64 and use middle or downscale?  
+        - push time = 32 leds/ms = for 200 leds(1600/8) should be about 6.4ms
+        - draw time ~ 16 ms 
+        - nearly 100 fps still using octo
+    - try issueing a complaint / problem report to allow non square XYmaps
 
+
+ - Teensy 4.1: 50 parallel pins
+    https://github.com/FastLED/FastLED/blob/master/examples/TeensyMassiveParallel/TeensyMassiveParallel.ino
+
+
+ - re-add hue shifting
  - fix / redo the led mounting!!!!
  - make human knob interface for brightness / time
  - re-add music reactivity
