@@ -34,6 +34,7 @@ using polor polar coordinates. The effects are very complex and powerful.
 
 #include "fx/2d/animartrix.hpp"
 #include "fl/ui.h"
+#include "fl/upscale.h"
 
 using namespace fl;
 
@@ -43,8 +44,8 @@ using namespace fl;
 #define COLOR_ORDER GRB
 
 //NOTE REQUIRES REDEFINING THE radial_filter_radius:::       if (w > h) { this->radial_filter_radius = int(float(w)*23.0/32.0); } else { this->radial_filter_radius = int(float(h)*23.0/32.0); }
-#define MATRIX_WIDTH 64
-#define MATRIX_HEIGHT 64
+#define MATRIX_WIDTH 25
+#define MATRIX_HEIGHT 25
 
 #define NUM_LEDS (MATRIX_WIDTH * MATRIX_HEIGHT)
 
@@ -58,9 +59,11 @@ using namespace fl;
 #include "map.h"
 CRGB leds[NUM_LEDS];
 CRGB leds0[200];
-//XYMap xyMap = XYMap::constructRectangularGrid(MATRIX_WIDTH, MATRIX_HEIGHT);
-XYMap xyMap = XYMap::constructSerpentine(MATRIX_WIDTH, MATRIX_HEIGHT);
+CRGB ledsFull[1600];
+XYMap xyMap = XYMap::constructRectangularGrid(MATRIX_WIDTH, MATRIX_HEIGHT);
+//XYMap xyMap = XYMap::constructSerpentine(MATRIX_WIDTH, MATRIX_HEIGHT);
 XYMap xyMap0 = XYMap::constructSerpentine(8, 25);
+XYMap xyMapFull = XYMap::constructSerpentine(64, 25);
 //XYMap xyMap = XYMap::constructWithUserFunction(MATRIX_WIDTH, MATRIX_HEIGHT, XY);
 //XYMap xyMap = XYMap::constructWithLookUpTable(MATRIX_WIDTH, MATRIX_HEIGHT, XYTable);
 /////////////////////////////////////////////////////////////////////////////
@@ -102,12 +105,20 @@ void setup() {
         animartrix.setColorOrder(static_cast<EOrder>(value));
     });
     /////////////////////////////////////////////////////////////////////////////
-
+/*
     auto screen_map0 = xyMap0.toScreenMap();
     screen_map0.setDiameter(LED_DIAMETER);
     FastLED.addLeds<WS2811, LED_PIN, COLOR_ORDER>(leds0, 25*8)
         .setCorrection(TypicalLEDStrip)
-        .setScreenMap(screen_map0);
+        .setScreenMap(screen_map0);    */
+
+    auto screen_mapFull = xyMapFull.toScreenMap();
+    screen_mapFull.setDiameter(LED_DIAMETER);
+    FastLED.addLeds<WS2811, LED_PIN, COLOR_ORDER>(ledsFull, 1600)
+        .setCorrection(TypicalLEDStrip)
+        .setScreenMap(screen_mapFull);
+
+
     FastLED.setBrightness(brightness);
     Serial.begin(115200);
 }
@@ -127,7 +138,7 @@ void loop() {
 
     static unsigned long drawMillis = millis();//////////////
 
-
+    /*
     for (int y = 0; y < 25; y++){
         for (int x = 0; x < 8; x++){
             int xx = 32-4+x;
@@ -135,7 +146,11 @@ void loop() {
             //copy just the middle of the 64x64 to leds0 as a test
             leds0[xyMap0(x,y)] = leds[xyMap(xx,yy)];
         }
-    }
+    }*/
+
+    upscale(leds, ledsFull, MATRIX_WIDTH, MATRIX_HEIGHT, xyMapFull);
+
+    static unsigned long copyMillis = millis();//////////////
     FastLED.show();
 
     /////////////////////////////////////////////////////////////////////////////
@@ -154,11 +169,14 @@ void loop() {
     EVERY_N_MILLIS(1000) Serial.print(1000.0/float(endMillis - startMillis));
 
     EVERY_N_MILLIS(1000) Serial.print(", draw time: ");
-    EVERY_N_MILLIS(1000) Serial.print(drawMillis - startMillis);
+    EVERY_N_MILLIS(1000) Serial.print(drawMillis - startMillis);    
+
+    EVERY_N_MILLIS(1000) Serial.print(", draw time: ");
+    EVERY_N_MILLIS(1000) Serial.print(copyMillis - drawMillis);
 
 
     EVERY_N_MILLIS(1000) Serial.print(", push time: ");
-    EVERY_N_MILLIS(1000) Serial.println(endMillis - drawMillis);
+    EVERY_N_MILLIS(1000) Serial.println(endMillis - copyMillis);
     
 }
 

@@ -5,8 +5,8 @@
 
  - beeping is due to XY map being non square!!!!
     - XXX trying my own map using these https://forum.arduino.cc/t/irregular-shape-led-matrix/1172989/8  https://macetech.github.io/FastLED-XY-Map-Generator/
-    - try 25x25 with upscale
-    - try 64x64 and use middle or downscale?  
+    - try 25x25 with upscale = XXms draw 6ms push
+    - try 64x64 and use middle or downscale? = 16ms draw 6ms push
         - push time = 32 leds/ms = for 200 leds(1600/8) should be about 6.4ms
         - draw time ~ 16 ms 
         - nearly 100 fps still using octo
