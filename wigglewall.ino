@@ -23,6 +23,7 @@ This is the famouse Animartrix demo by Stefan Petrick. The effects are generated
 using polor polar coordinates. The effects are very complex and powerful.
 */
 
+
 #include <stdio.h>
 #include <string>
 
@@ -37,12 +38,12 @@ using polor polar coordinates. The effects are very complex and powerful.
 using namespace fl;
 
 
-#define LED_PIN 3
+#define LED_PIN 12
 #define BRIGHTNESS 96
 #define COLOR_ORDER GRB
 
-#define MATRIX_WIDTH 32
-#define MATRIX_HEIGHT 32
+#define MATRIX_WIDTH 64
+#define MATRIX_HEIGHT 25
 
 #define NUM_LEDS (MATRIX_WIDTH * MATRIX_HEIGHT)
 
@@ -52,15 +53,20 @@ using namespace fl;
 // This small led was chosen because otherwise the bloom effect is too strong.
 #define LED_DIAMETER 0.15  // .15 cm or 1.5mm
 
-
+/////////////////////////////////////////////////////////////////////////////
+#include "map.h"
 CRGB leds[NUM_LEDS];
-XYMap xyMap = XYMap::constructRectangularGrid(MATRIX_WIDTH, MATRIX_HEIGHT);
+//XYMap xyMap = XYMap::constructRectangularGrid(MATRIX_WIDTH, MATRIX_HEIGHT);
+//XYMap xyMap = XYMap::constructSerpentine(MATRIX_WIDTH, MATRIX_HEIGHT);
+//XYMap xyMap = XYMap::constructWithUserFunction(MATRIX_WIDTH, MATRIX_HEIGHT, XY);
+XYMap xyMap = XYMap::constructWithLookUpTable(MATRIX_WIDTH, MATRIX_HEIGHT, XYTable);
+/////////////////////////////////////////////////////////////////////////////
 
 
 UITitle title("Animartrix");
 UIDescription description("Demo of the Animatrix effects. @author of fx is StefanPetrick");
 
-UISlider brightness("Brightness", 255, 0, 255, 1);
+UISlider brightness("Brightness", 255, 0, 255);
 UINumberField fxIndex("Animartrix - index", 0, 0, NUM_ANIMATIONS - 1);
 UINumberField colorOrder("Color Order", 0, 0, 5);
 UISlider timeSpeed("Time Speed", 1, -10, 10, .1);
@@ -68,10 +74,6 @@ UISlider timeSpeed("Time Speed", 1, -10, 10, .1);
 Animartrix animartrix(xyMap, FIRST_ANIMATION);
 FxEngine fxEngine(NUM_LEDS);
 
-/////////////////////////////////////////////////////////////////////////////
-#include "manager.h"
-
-Manager manager;
 
 void setup() {
     auto screen_map = xyMap.toScreenMap();
@@ -96,24 +98,14 @@ void setup() {
 }
 
 void loop() {
-    EVERY_N_MILLIS(100) manager.setDesiredBrightness(brightness);
-    EVERY_N_MILLIS(100) manager.setSpeed(timeSpeed);
+    FastLED.setBrightness(brightness);
+    fxEngine.setSpeed(timeSpeed);
     static int lastFxIndex = -1;
     if (fxIndex.value() != lastFxIndex) {
         lastFxIndex = fxIndex;
-        manager.setPattern(fxIndex);
+        animartrix.fxSet(fxIndex);
     }
     fxEngine.draw(millis(), leds);
     FastLED.show();
-
-    /////////////////////////////////////////////////////////////////////////////
-    //use manager values to update brightness etc for next frame
-    /////////////////////////////////////////////////////////////////////////////
-    manager.run();
-
-    if (manager.clearAnimationChanged()){
-        animartrix.fxSet(manager.currentAnimation);
-    }
-    FastLED.setBrightness(manager.currentBrightness);
-    fxEngine.setSpeed(manager.timeSpeed);
 }
+
