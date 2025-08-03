@@ -39,7 +39,7 @@ using polor polar coordinates. The effects are very complex and powerful.
 
 using namespace fl;
 
-#define LED_PIN 3
+#define LED_PIN 2
 #define LED_PIN0 12
 #define LED_PIN1 40
 #define LED_PIN2 27
@@ -48,11 +48,12 @@ using namespace fl;
 #define LED_PIN5 34
 #define LED_PIN6 41
 #define LED_PIN7 28
-#define BRIGHTNESS 96
 #define COLOR_ORDER GRB
 
+#define BRIGHTNESS 200
+
 //NOTE REQUIRES REDEFINING THE radial_filter_radius:::       if (w > h) { this->radial_filter_radius = int(float(w)*23.0/32.0); } else { this->radial_filter_radius = int(float(h)*23.0/32.0); }
-#define MATRIX_WIDTH 64
+#define MATRIX_WIDTH 25
 #define MATRIX_HEIGHT 25
 
 #define NUM_LEDS (MATRIX_WIDTH * MATRIX_HEIGHT)
@@ -75,10 +76,11 @@ XYMap xyMap_pin = XYMap::constructSerpentine(8, 25);
 //XYMap xyMap = XYMap::constructWithUserFunction(MATRIX_WIDTH, MATRIX_HEIGHT, XY);
 //XYMap xyMap = XYMap::constructWithLookUpTable(MATRIX_WIDTH, MATRIX_HEIGHT, XYTable);
 
+
 /////////////////////////////////////////////////////////////////////////////
 
 
-UISlider brightness("Brightness", 100, 0, 255, 1);
+UISlider brightness("Brightness", BRIGHTNESS, 0, 255, 1);
 UISlider fxIndex("Animation", 0, 0, NUM_ANIMATIONS - 1, 1);
 UISlider timeSpeed("Time Speed", 1, -10, 10, .1);
 
@@ -103,61 +105,62 @@ void setup() {
 
     /////////////////////////////////////////////////////////////////////////////
 
-
     auto screen_map_pin0 = xyMap_pin.toScreenMap();
     screen_map_pin0.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2811, LED_PIN0, COLOR_ORDER>(leds_pin[0], 25*8)
+    FastLED.addLeds<WS2812, LED_PIN0, COLOR_ORDER>(leds_pin[0], 25*8)
         .setCorrection(TypicalLEDStrip)
         .setScreenMap(screen_map_pin0);    
 
     auto screen_map_pin1 = xyMap_pin.toScreenMap();
     screen_map_pin1.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2811, LED_PIN1, COLOR_ORDER>(leds_pin[1], 25*8)
+    FastLED.addLeds<WS2812, LED_PIN1, COLOR_ORDER>(leds_pin[1], 25*8)
         .setCorrection(TypicalLEDStrip)
         .setScreenMap(screen_map_pin1);    
 
     auto screen_map_pin2 = xyMap_pin.toScreenMap();
     screen_map_pin2.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2811, LED_PIN2, COLOR_ORDER>(leds_pin[2], 25*8)
+    FastLED.addLeds<WS2812, LED_PIN2, COLOR_ORDER>(leds_pin[2], 25*8)
         .setCorrection(TypicalLEDStrip)
         .setScreenMap(screen_map_pin2);
 
     auto screen_map_pin3 = xyMap_pin.toScreenMap();
     screen_map_pin3.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2811, LED_PIN3, COLOR_ORDER>(leds_pin[3], 25*8)
+    FastLED.addLeds<WS2812, LED_PIN3, COLOR_ORDER>(leds_pin[3], 25*8)
         .setCorrection(TypicalLEDStrip)
         .setScreenMap(screen_map_pin3);
 
     auto screen_map_pin4 = xyMap_pin.toScreenMap();
     screen_map_pin4.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2811, LED_PIN4, COLOR_ORDER>(leds_pin[4], 25*8)
+    FastLED.addLeds<WS2812, LED_PIN4, COLOR_ORDER>(leds_pin[4], 25*8)
         .setCorrection(TypicalLEDStrip)
         .setScreenMap(screen_map_pin4);
 
     auto screen_map_pin5 = xyMap_pin.toScreenMap();
     screen_map_pin5.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2811, LED_PIN5, COLOR_ORDER>(leds_pin[5], 25*8)
+    FastLED.addLeds<WS2812, LED_PIN5, COLOR_ORDER>(leds_pin[5], 25*8)
         .setCorrection(TypicalLEDStrip)
         .setScreenMap(screen_map_pin5);
 
     auto screen_map_pin6 = xyMap_pin.toScreenMap();
     screen_map_pin6.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2811, LED_PIN6, COLOR_ORDER>(leds_pin[6], 25*8)
+    FastLED.addLeds<WS2812, LED_PIN6, COLOR_ORDER>(leds_pin[6], 25*8)
         .setCorrection(TypicalLEDStrip)
         .setScreenMap(screen_map_pin6);
 
     auto screen_map_pin7 = xyMap_pin.toScreenMap();
     screen_map_pin7.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2811, LED_PIN7, COLOR_ORDER>(leds_pin[7], 25*8)
+    FastLED.addLeds<WS2812, LED_PIN7, COLOR_ORDER>(leds_pin[7], 25*8)
         .setCorrection(TypicalLEDStrip)
         .setScreenMap(screen_map_pin7);
 
-
+    /////////////////////////////////////////////////////////////////////////////
+#if SIMULATION
     auto screen_mapFull = xyMapFull.toScreenMap();
     screen_mapFull.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2811, LED_PIN, COLOR_ORDER>(ledsFull, 1600)
+    FastLED.addLeds<WS2812, LED_PIN, COLOR_ORDER>(ledsFull, 1600)
         .setCorrection(TypicalLEDStrip)
         .setScreenMap(screen_mapFull);
+#endif
 
 
     FastLED.setBrightness(brightness);
@@ -199,7 +202,7 @@ void loop() {
     /////////////////////////////////////////////////////////////////////////////
     // Split the image into its output pins and associated leds variables
     /////////////////////////////////////////////////////////////////////////////
-    for (int pin = 0; pin <2; pin++){
+    for (int pin = 0; pin <8; pin++){
         for (int y = 0; y < 25; y++){
             for (int x = 0; x < 8; x++){
                 int xx = pin * 8 + x;
