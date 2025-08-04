@@ -52,13 +52,13 @@ using namespace fl;
 // The weird way I soldered my teensy makes for the following pinout
 // pin | L/R | Eth Color
 // 27  |  R  | Green
-// 41  |  R  | Blue
+// 34  |  R  | Blue
 // 28  |  R  | Brown
 // 12  |  R  | Orange
 // 26  |  L  | Orange
 // 25  |  L  | Brown
 // 40  |  L  | Blue
-// 34  |  L  | Green
+// 41  |  L  | Green
 // ^^ This is a very specific order that creates a mirrored wall layout, where the "left" and "right" sides are interchangeable
 
 // The dataflow direction of each wall pannel is flipped for easier cable runs (see graphic below with <- and -> denoting the dataflow direction)
@@ -66,13 +66,13 @@ using namespace fl;
 
 // This is a very specific order that creates a mirrored wall layout, where the "left" and "right" sides are interchangeable
 #define LED_PIN0 27
-#define LED_PIN1 41
+#define LED_PIN1 34
 #define LED_PIN2 28
 #define LED_PIN3 12
 #define LED_PIN4 26
 #define LED_PIN5 25
 #define LED_PIN6 40
-#define LED_PIN7 34
+#define LED_PIN7 41
 
 
 #define COLOR_ORDER RGB
