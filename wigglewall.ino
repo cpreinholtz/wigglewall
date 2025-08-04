@@ -104,7 +104,7 @@ void setup() {
     animartrix.setColorOrder(static_cast<EOrder>(COLOR_ORDER));
 
     /////////////////////////////////////////////////////////////////////////////
-
+#if NOT_SIMULATION
     auto screen_map_pin0 = xyMap_pin.toScreenMap();
     screen_map_pin0.setDiameter(LED_DIAMETER);
     FastLED.addLeds<WS2812, LED_PIN0, COLOR_ORDER>(leds_pin[0], 25*8)
@@ -152,8 +152,10 @@ void setup() {
     FastLED.addLeds<WS2812, LED_PIN7, COLOR_ORDER>(leds_pin[7], 25*8)
         .setCorrection(TypicalLEDStrip)
         .setScreenMap(screen_map_pin7);
+#endif
 
     /////////////////////////////////////////////////////////////////////////////
+#define SIMULATION true
 #if SIMULATION
     auto screen_mapFull = xyMapFull.toScreenMap();
     screen_mapFull.setDiameter(LED_DIAMETER);
@@ -199,6 +201,17 @@ void loop() {
     /////////////////////////////////////////////////////////////////////////////
     upscale(leds, ledsFull, MATRIX_WIDTH, MATRIX_HEIGHT, xyMapFull);
 
+#define DEBUG_MILLIS 5000
+    if (millis() < DEBUG_MILLIS){
+        for (int y = 0; y < 25; y++){
+            for (int x = 0; x < 64; x++){
+                int idx = xyMapFull(x,y);
+                ledsFull[idx].r = x*255/64;
+                ledsFull[idx].b = y*255/25;
+                ledsFull[idx].g = 0;
+            }
+        }
+    }
     /////////////////////////////////////////////////////////////////////////////
     // Split the image into its output pins and associated leds variables
     /////////////////////////////////////////////////////////////////////////////
@@ -206,11 +219,20 @@ void loop() {
         for (int y = 0; y < 25; y++){
             for (int x = 0; x < 8; x++){
                 int xx = pin * 8 + x;
-                leds_pin[pin][xyMap_pin(x,y)] = ledsFull[xyMapFull(xx,y)];
+                int xxx;
+                if (pin % 2 == 0) xxx = 7-x; // reverse serpentine for even outputs
+                else xxx = x;
+                leds_pin[pin][xyMap_pin(xxx,y)] = ledsFull[xyMapFull(xx,y)];
             }
         }
     }
-
+    if (millis() < DEBUG_MILLIS){
+        for (int pin = 0; pin <8; pin++){
+            for (int i = 0; i <= pin; i++){
+                leds_pin[pin][i].g = 200;
+            }
+        }
+    }
 
     static unsigned long copyMillis = millis();//////////////
     FastLED.show();
