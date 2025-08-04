@@ -39,16 +39,43 @@ using polor polar coordinates. The effects are very complex and powerful.
 
 using namespace fl;
 
+// unused, just defined in case I accidentally load the simulation code onto hardware (gets output on this pin)
 #define LED_PIN 2
-#define LED_PIN0 12
-#define LED_PIN1 40
-#define LED_PIN2 27
-#define LED_PIN3 25
+
+//I am going to label OCTO outputs LEFT and RIGHT based on looking from the top of the board
+// _______
+//|       |
+//|       |
+//| _   _ |
+//||L| |R||
+// --------
+// The weird way I soldered my teensy makes for the following pinout
+// pin | L/R | Eth Color
+// 27  |  R  | Green
+// 41  |  R  | Blue
+// 28  |  R  | Brown
+// 12  |  R  | Orange
+// 26  |  L  | Orange
+// 25  |  L  | Brown
+// 40  |  L  | Blue
+// 34  |  L  | Green
+// ^^ This is a very specific order that creates a mirrored wall layout, where the "left" and "right" sides are interchangeable
+
+// The dataflow direction of each wall pannel is flipped for easier cable runs (see graphic below with <- and -> denoting the dataflow direction)
+// |<-Gr| |Bl->| |<-Br| |Or->| |<-Or| |Br->| |<-Bl| |Gr->|
+
+// This is a very specific order that creates a mirrored wall layout, where the "left" and "right" sides are interchangeable
+#define LED_PIN0 27
+#define LED_PIN1 41
+#define LED_PIN2 28
+#define LED_PIN3 12
 #define LED_PIN4 26
-#define LED_PIN5 34
-#define LED_PIN6 41
-#define LED_PIN7 28
-#define COLOR_ORDER GRB
+#define LED_PIN5 25
+#define LED_PIN6 40
+#define LED_PIN7 34
+
+
+#define COLOR_ORDER RGB
 
 #define BRIGHTNESS 200
 
@@ -102,23 +129,29 @@ Animartrix animartrix(xyMap, FIRST_ANIMATION);
 FxEngine fxEngine(NUM_LEDS);
 
 /////////////////////////////////////////////////////////////////////////////
+// Clark's stuff
+/////////////////////////////////////////////////////////////////////////////   
+//#define SIMULATION
+#define DEBUG_MILLIS 50000
 #include "manager.h"
 Manager manager;
 
 void setup() {
+
+    //not used anymore, the 25 by 25 is only used by the fx engine
     //auto screen_map = xyMap.toScreenMap();
     //screen_map.setDiameter(LED_DIAMETER);
     //FastLED.addLeds<WS2811, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS)
         //.setCorrection(TypicalLEDStrip)
         //.setScreenMap(screen_map);
     //FastLED.setBrightness(brightness);
+
+
     fxEngine.addFx(animartrix);
-
-
     animartrix.setColorOrder(static_cast<EOrder>(COLOR_ORDER));
 
     /////////////////////////////////////////////////////////////////////////////
-#if NOT_SIMULATION
+#ifndef SIMULATION
 
     auto screen_map_pin0 = xyMap_pin.toScreenMap();
     screen_map_pin0.setDiameter(LED_DIAMETER);
@@ -170,8 +203,7 @@ void setup() {
 #endif
 
     /////////////////////////////////////////////////////////////////////////////
-#define SIMULATION true
-#if SIMULATION
+#ifdef SIMULATION
     auto screen_mapFull = xyMapFull.toScreenMap();
     screen_mapFull.setDiameter(LED_DIAMETER);
     FastLED.addLeds<WS2812, LED_PIN, COLOR_ORDER>(ledsFull, 1600)
@@ -216,16 +248,18 @@ void loop() {
     /////////////////////////////////////////////////////////////////////////////
     upscale(leds, ledsFull, MATRIX_WIDTH, MATRIX_HEIGHT, xyMapFull);
 
-#define DEBUG_MILLIS 5000
     if (millis() < DEBUG_MILLIS){
         for (int y = 0; y < 25; y++){
             for (int x = 0; x < 64; x++){
                 int idx = xyMapFull(x,y);
                 ledsFull[idx].r = x*255/64;
                 ledsFull[idx].b = y*255/25;
+                ledsFull[idx].r = 0;
+                ledsFull[idx].b = 0;
                 ledsFull[idx].g = 0;
             }
         }
+        //ledsFull[0].g = 100;
     }
     /////////////////////////////////////////////////////////////////////////////
     // Split the image into its output pins and associated leds variables
@@ -247,9 +281,10 @@ void loop() {
     }
     if (millis() < DEBUG_MILLIS){
         for (int pin = 0; pin <8; pin++){
-            for (int i = 0; i <= pin; i++){
+            for (int i = 0; i < pin; i++){
                 leds_pin[pin][i].g = 200;
             }
+            leds_pin[pin][pin].r = 200;
         }
     }
 
