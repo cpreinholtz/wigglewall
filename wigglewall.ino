@@ -69,9 +69,23 @@ using namespace fl;
 CRGB leds[NUM_LEDS];
 CRGB leds_pin[8][200];
 CRGB ledsFull[1600];
+
 XYMap xyMap = XYMap::constructRectangularGrid(MATRIX_WIDTH, MATRIX_HEIGHT);
 XYMap xyMapFull = XYMap::constructRectangularGrid(64, 25);
-XYMap xyMap_pin = XYMap::constructSerpentine(8, 25);
+
+
+//flip individual outputs because serperntine starts left to right then down, but my wall is up and down then left right
+FASTLED_FORCE_INLINE uint16_t xy_serpentine_vertical(uint16_t x, uint16_t y,
+                                            uint16_t width, uint16_t height) {
+    (void)width;
+    if (x & 1) // Even or odd row?
+        // reverse every second line for a serpentine led layout
+        return (x + 1) * height - 1 - y;
+    else
+        return x * height + y;
+}
+//XYMap xyMap_pin = XYMap::constructSerpentine(PIN_WIDTH, PIN_HEIGHT);
+XYMap xyMap_pin = XYMap::constructWithUserFunction(8, 25,xy_serpentine_vertical);
 //XYMap xyMap = XYMap::constructSerpentine(MATRIX_WIDTH, MATRIX_HEIGHT);
 //XYMap xyMap = XYMap::constructWithUserFunction(MATRIX_WIDTH, MATRIX_HEIGHT, XY);
 //XYMap xyMap = XYMap::constructWithLookUpTable(MATRIX_WIDTH, MATRIX_HEIGHT, XYTable);
@@ -105,6 +119,7 @@ void setup() {
 
     /////////////////////////////////////////////////////////////////////////////
 #if NOT_SIMULATION
+
     auto screen_map_pin0 = xyMap_pin.toScreenMap();
     screen_map_pin0.setDiameter(LED_DIAMETER);
     FastLED.addLeds<WS2812, LED_PIN0, COLOR_ORDER>(leds_pin[0], 25*8)
@@ -218,10 +233,14 @@ void loop() {
     for (int pin = 0; pin <8; pin++){
         for (int y = 0; y < 25; y++){
             for (int x = 0; x < 8; x++){
+                //get fullwall  xx based on current pin and pin's x
                 int xx = pin * 8 + x;
+
+                // reverse serpentine for even outputs (X gets inverted, y stays the same)
                 int xxx;
-                if (pin % 2 == 0) xxx = 7-x; // reverse serpentine for even outputs
+                if (pin % 2 == 0) xxx = 7-x;
                 else xxx = x;
+
                 leds_pin[pin][xyMap_pin(xxx,y)] = ledsFull[xyMapFull(xx,y)];
             }
         }
