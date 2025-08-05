@@ -75,22 +75,18 @@ using namespace fl;
 #define LED_PIN7 27
 
 
-#define COLOR_ORDER RGB
 
-#define BRIGHTNESS 50
 
 //NOTE REQUIRES REDEFINING THE radial_filter_radius:::       if (w > h) { this->radial_filter_radius = int(float(w)*23.0/32.0); } else { this->radial_filter_radius = int(float(h)*23.0/32.0); }
 // AND requires fastled master branch for non square fixes.  This is the commit I am currently on during development: 2ff981b7d
 #define MATRIX_WIDTH 64
 #define MATRIX_HEIGHT 25
-
 #define NUM_LEDS (MATRIX_WIDTH * MATRIX_HEIGHT)
 
+#define COLOR_ORDER RGB
+#define BRIGHTNESS 50
 #define FIRST_ANIMATION POLAR_WAVES
-
-// This is purely use for the web compiler to display the animartrix effects.
-// This small led was chosen because otherwise the bloom effect is too strong.
-#define LED_DIAMETER 0.15  // .15 cm or 1.5mm
+#define LED_DIAMETER 0.15  // .15 cm or 1.5mm // This is purely use for the web compiler to display the animartrix effects.
 
 /////////////////////////////////////////////////////////////////////////////
 //break up my 64x25 wall into 8 8x25 pannels
@@ -118,7 +114,6 @@ FASTLED_FORCE_INLINE uint16_t xy_serpentine_vertical(uint16_t x, uint16_t y,
 XYMap xyMap_pin = XYMap::constructWithUserFunction(PANNEL_WIDTH, PANNEL_HEIGHT, xy_serpentine_vertical);
 
 
-
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -142,76 +137,35 @@ void setup() {
 
     fxEngine.addFx(animartrix);
     animartrix.setColorOrder(static_cast<EOrder>(COLOR_ORDER));
+    FastLED.setCorrection(TypicalLEDStrip);
+    FastLED.setBrightness(brightness);
+    Serial.begin(115200);
 
     /////////////////////////////////////////////////////////////////////////////
 #ifndef SIMULATION
-
-    auto screen_map_pin0 = xyMap_pin.toScreenMap();
-    screen_map_pin0.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2812, LED_PIN0, COLOR_ORDER>(leds_pin[0], NUM_LEDS_PER_PANNEL)
-        .setCorrection(TypicalLEDStrip)
-        .setScreenMap(screen_map_pin0);
-
-    auto screen_map_pin1 = xyMap_pin.toScreenMap();
-    screen_map_pin1.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2812, LED_PIN1, COLOR_ORDER>(leds_pin[1], NUM_LEDS_PER_PANNEL)
-        .setCorrection(TypicalLEDStrip)
-        .setScreenMap(screen_map_pin1);    
-
-    auto screen_map_pin2 = xyMap_pin.toScreenMap();
-    screen_map_pin2.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2812, LED_PIN2, COLOR_ORDER>(leds_pin[2], NUM_LEDS_PER_PANNEL)
-        .setCorrection(TypicalLEDStrip)
-        .setScreenMap(screen_map_pin2);
-
-    auto screen_map_pin3 = xyMap_pin.toScreenMap();
-    screen_map_pin3.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2812, LED_PIN3, COLOR_ORDER>(leds_pin[3], NUM_LEDS_PER_PANNEL)
-        .setCorrection(TypicalLEDStrip)
-        .setScreenMap(screen_map_pin3);
-
-    auto screen_map_pin4 = xyMap_pin.toScreenMap();
-    screen_map_pin4.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2812, LED_PIN4, COLOR_ORDER>(leds_pin[4], NUM_LEDS_PER_PANNEL)
-        .setCorrection(TypicalLEDStrip)
-        .setScreenMap(screen_map_pin4);
-
-    auto screen_map_pin5 = xyMap_pin.toScreenMap();
-    screen_map_pin5.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2812, LED_PIN5, COLOR_ORDER>(leds_pin[5], NUM_LEDS_PER_PANNEL)
-        .setCorrection(TypicalLEDStrip)
-        .setScreenMap(screen_map_pin5);
-
-    auto screen_map_pin6 = xyMap_pin.toScreenMap();
-    screen_map_pin6.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2812, LED_PIN6, COLOR_ORDER>(leds_pin[6], NUM_LEDS_PER_PANNEL)
-        .setCorrection(TypicalLEDStrip)
-        .setScreenMap(screen_map_pin6);
-
-    auto screen_map_pin7 = xyMap_pin.toScreenMap();
-    screen_map_pin7.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2812, LED_PIN7, COLOR_ORDER>(leds_pin[7], NUM_LEDS_PER_PANNEL)
-        .setCorrection(TypicalLEDStrip)
-        .setScreenMap(screen_map_pin7);
+    FastLED.addLeds<WS2812, LED_PIN0, COLOR_ORDER>(leds_pin[0], NUM_LEDS_PER_PANNEL);
+    FastLED.addLeds<WS2812, LED_PIN1, COLOR_ORDER>(leds_pin[1], NUM_LEDS_PER_PANNEL);
+    FastLED.addLeds<WS2812, LED_PIN2, COLOR_ORDER>(leds_pin[2], NUM_LEDS_PER_PANNEL);
+    FastLED.addLeds<WS2812, LED_PIN3, COLOR_ORDER>(leds_pin[3], NUM_LEDS_PER_PANNEL);
+    FastLED.addLeds<WS2812, LED_PIN4, COLOR_ORDER>(leds_pin[4], NUM_LEDS_PER_PANNEL);
+    FastLED.addLeds<WS2812, LED_PIN5, COLOR_ORDER>(leds_pin[5], NUM_LEDS_PER_PANNEL);
+    FastLED.addLeds<WS2812, LED_PIN6, COLOR_ORDER>(leds_pin[6], NUM_LEDS_PER_PANNEL);
+    FastLED.addLeds<WS2812, LED_PIN7, COLOR_ORDER>(leds_pin[7], NUM_LEDS_PER_PANNEL);
 #endif
-
     /////////////////////////////////////////////////////////////////////////////
 #ifdef SIMULATION
     auto screen_mapFull = xyMapFull.toScreenMap();
     screen_mapFull.setDiameter(LED_DIAMETER);
-    FastLED.addLeds<WS2812, LED_PIN, COLOR_ORDER>(ledsFull, NUM_LEDS)
-        .setCorrection(TypicalLEDStrip)
-        .setScreenMap(screen_mapFull);
+    FastLED.addLeds<WS2812, LED_PIN, COLOR_ORDER>(ledsFull, NUM_LEDS).setCorrection(TypicalLEDStrip).setScreenMap(screen_mapFull);
 #endif
-
-
-    FastLED.setBrightness(brightness);
-    Serial.begin(115200);
 }
+
+
+
 
 void loop() {
     /////////////////////////////////////////////////////////////////////////////
-    // Draw the animation in 25x25 space
+    // Draw the animation
     /////////////////////////////////////////////////////////////////////////////
     static unsigned long startMillis = millis();
     EVERY_N_MILLIS(100) manager.setDesiredBrightness(brightness);
@@ -248,7 +202,6 @@ void loop() {
                 ledsFull[idx].g = 0;
             }
         }
-        //ledsFull[0].g = 100;
     }
     /////////////////////////////////////////////////////////////////////////////
     // Split the image into its output pins and associated leds variables
@@ -270,6 +223,7 @@ void loop() {
     }
     /////////////////////////////////////////////////////////////////////////////
     // Debug by counting pannels and lighting up first N leds in each pannel
+    // Show the results!!!
     /////////////////////////////////////////////////////////////////////////////
     if (millis() < DEBUG_MILLIS){
         for (int pin = 0; pin < NUM_PANNELS; pin++){
@@ -290,12 +244,15 @@ void loop() {
 
     if (manager.clearAnimationChanged()){
         animartrix.fxSet(manager.currentAnimation);
+
     }
     FastLED.setBrightness(manager.currentBrightness);
     fxEngine.setSpeed(manager.timeSpeed);
 
     static unsigned long endMillis = millis();
     EVERY_N_MILLIS(1000) {
+#ifdef SIMULATION
+        
         Serial.print("FPS: ");
         Serial.print(1000.0/float(endMillis - startMillis));
 
