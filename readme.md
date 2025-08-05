@@ -1,6 +1,4 @@
 # TOP PRIORITY TODO's
-
- - figure out pin numbering (use debug)
  - fix / redo the led mounting!!!!
  - re-add music reactivity
 

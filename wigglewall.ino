@@ -51,28 +51,28 @@ using namespace fl;
 // --------
 // The weird way I soldered my teensy makes for the following pinout
 // pin | L/R | Eth Color
-// 27  |  R  | Green
-// 34  |  R  | Blue
-// 28  |  R  | Brown
-// 12  |  R  | Orange
-// 26  |  L  | Orange
-// 25  |  L  | Brown
-// 40  |  L  | Blue
 // 41  |  L  | Green
+// 40  |  L  | Blue
+// 25  |  L  | Brown
+// 26  |  L  | Orange
+// 12  |  R  | Orange
+// 28  |  R  | Brown
+// 34  |  R  | Blue
+// 27  |  R  | Green
 // ^^ This is a very specific order that creates a mirrored wall layout, where the "left" and "right" sides are interchangeable
 
 // The dataflow direction of each wall pannel is flipped for easier cable runs (see graphic below with <- and -> denoting the dataflow direction)
 // |<-Gr| |Bl->| |<-Br| |Or->| |<-Or| |Br->| |<-Bl| |Gr->|
 
 // This is a very specific order that creates a mirrored wall layout, where the "left" and "right" sides are interchangeable
-#define LED_PIN0 27
-#define LED_PIN1 34
-#define LED_PIN2 28
-#define LED_PIN3 12
-#define LED_PIN4 26
-#define LED_PIN5 25
-#define LED_PIN6 40
-#define LED_PIN7 41
+#define LED_PIN0 41
+#define LED_PIN1 40
+#define LED_PIN2 25
+#define LED_PIN3 26
+#define LED_PIN4 12
+#define LED_PIN5 28
+#define LED_PIN6 34
+#define LED_PIN7 27
 
 
 #define COLOR_ORDER RGB
@@ -132,7 +132,7 @@ FxEngine fxEngine(NUM_LEDS);
 // Clark's stuff
 /////////////////////////////////////////////////////////////////////////////   
 //#define SIMULATION
-#define DEBUG_MILLIS 50000
+#define DEBUG_MILLIS 10000
 #include "manager.h"
 Manager manager;
 
@@ -252,10 +252,8 @@ void loop() {
         for (int y = 0; y < 25; y++){
             for (int x = 0; x < 64; x++){
                 int idx = xyMapFull(x,y);
-                ledsFull[idx].r = x*255/64;
-                ledsFull[idx].b = y*255/25;
-                ledsFull[idx].r = 0;
-                ledsFull[idx].b = 0;
+                ledsFull[idx].r = x*255/64/2;
+                ledsFull[idx].b = y*255/25/2;
                 ledsFull[idx].g = 0;
             }
         }
@@ -275,7 +273,7 @@ void loop() {
                 if (pin % 2 == 0) xxx = 7-x;
                 else xxx = x;
 
-                leds_pin[pin][xyMap_pin(xxx,y)] = ledsFull[xyMapFull(xx,y)];
+                leds_pin[pin][xyMap_pin(xxx,y)] = ledsFull[xyMapFull(xx,y)]; //todo make this a function, big map xy to little map pin & xy
             }
         }
     }
