@@ -54,11 +54,11 @@ using namespace fl;
 // 41  |  L  | Green
 // 40  |  L  | Blue
 // 25  |  L  | Brown
-// 26  |  L  | Orange
+// 26  |  L  | Orange  <- this seems to be a problem pin for some reason, some flashing
 // 12  |  R  | Orange
 // 28  |  R  | Brown
 // 34  |  R  | Blue
-// 27  |  R  | Green
+// 27  |  R  | Green  <- this seems to be a problem pin for some reason, lots of flashing
 // ^^ This is a very specific order that creates a mirrored wall layout, where the "left" and "right" sides are interchangeable
 
 // The dataflow direction of each wall pannel is flipped for easier cable runs (see graphic below with <- and -> denoting the dataflow direction)
@@ -77,10 +77,11 @@ using namespace fl;
 
 #define COLOR_ORDER RGB
 
-#define BRIGHTNESS 200
+#define BRIGHTNESS 50
 
 //NOTE REQUIRES REDEFINING THE radial_filter_radius:::       if (w > h) { this->radial_filter_radius = int(float(w)*23.0/32.0); } else { this->radial_filter_radius = int(float(h)*23.0/32.0); }
-#define MATRIX_WIDTH 25
+// AND requires fastled master branch for non square fixes.  This is the commit I am currently on during development: 2ff981b7d
+#define MATRIX_WIDTH 64
 #define MATRIX_HEIGHT 25
 
 #define NUM_LEDS (MATRIX_WIDTH * MATRIX_HEIGHT)
@@ -92,14 +93,10 @@ using namespace fl;
 #define LED_DIAMETER 0.15  // .15 cm or 1.5mm
 
 /////////////////////////////////////////////////////////////////////////////
-#include "map.h"
-CRGB leds[NUM_LEDS];
 CRGB leds_pin[8][200];
-CRGB ledsFull[1600];
+CRGB ledsFull[NUM_LEDS];
 
-XYMap xyMap = XYMap::constructRectangularGrid(MATRIX_WIDTH, MATRIX_HEIGHT);
-XYMap xyMapFull = XYMap::constructRectangularGrid(64, 25);
-
+XYMap xyMapFull = XYMap::constructRectangularGrid(MATRIX_WIDTH, MATRIX_HEIGHT);
 
 //flip individual outputs because serperntine starts left to right then down, but my wall is up and down then left right
 FASTLED_FORCE_INLINE uint16_t xy_serpentine_vertical(uint16_t x, uint16_t y,
@@ -125,12 +122,13 @@ UISlider brightness("Brightness", BRIGHTNESS, 0, 255, 1);
 UISlider fxIndex("Animation", 0, 0, NUM_ANIMATIONS - 1, 1);
 UISlider timeSpeed("Time Speed", 1, -10, 10, .1);
 
-Animartrix animartrix(xyMap, FIRST_ANIMATION);
+Animartrix animartrix(xyMapFull, FIRST_ANIMATION);
 FxEngine fxEngine(NUM_LEDS);
 
 /////////////////////////////////////////////////////////////////////////////
 // Clark's stuff
 /////////////////////////////////////////////////////////////////////////////   
+//USE THIS TO ALLOW THE WEB COMPILER TO USE THE FULL 64x25 OUTPUT
 //#define SIMULATION
 #define DEBUG_MILLIS 10000
 #include "manager.h"
@@ -228,26 +226,24 @@ void loop() {
         lastFxIndex = fxIndex;
         manager.setPattern(fxIndex);
     }
-    fxEngine.draw(millis(), leds);
+    fxEngine.draw(millis(), ledsFull);
     static unsigned long drawMillis = millis();//////////////
 
     /////////////////////////////////////////////////////////////////////////////
-    // apply hue shift on the smaller 25x25 image
+    // apply hue shift
     /////////////////////////////////////////////////////////////////////////////
     CHSV hsv[NUM_LEDS];
     static uint8_t hueOffset = 0;
     for (int y = 0; y < NUM_LEDS; y++){
-        hsv[y] = rgb2hsv_approximate(leds[y]);
+        hsv[y] = rgb2hsv_approximate(ledsFull[y]);
         hsv[y].h = hsv[y].h + hueOffset;
     }
-    hsv2rgb_rainbow(hsv, leds, NUM_LEDS);
-    EVERY_N_MILLIS(10) hueOffset++;
+    hsv2rgb_rainbow(hsv, ledsFull, NUM_LEDS);
+    EVERY_N_MILLIS(HUE_INCREMENT_EVERY_N_MILLIS) hueOffset++;  //increment period defined in manager class
 
     /////////////////////////////////////////////////////////////////////////////
-    // Upscale the animation to 64x25
+    // Debug creating a solid gradient at power on to visually test mapping
     /////////////////////////////////////////////////////////////////////////////
-    upscale(leds, ledsFull, MATRIX_WIDTH, MATRIX_HEIGHT, xyMapFull);
-
     if (millis() < DEBUG_MILLIS){
         for (int y = 0; y < 25; y++){
             for (int x = 0; x < 64; x++){
@@ -277,6 +273,9 @@ void loop() {
             }
         }
     }
+    /////////////////////////////////////////////////////////////////////////////
+    // Debug by counting pannels by lighting up first N leds
+    /////////////////////////////////////////////////////////////////////////////
     if (millis() < DEBUG_MILLIS){
         for (int pin = 0; pin <8; pin++){
             for (int i = 0; i < pin; i++){

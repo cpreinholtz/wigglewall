@@ -14,10 +14,12 @@ License CC BY-NC 3.0
 /////////////////////////////////////////////////////////////////////////////
 
 // how many seconds between swapping animations
-#define ANIMATION_UPDATE_PERIOD 15
+#define ANIMATION_UPDATE_PERIOD 45
 
 // how many seconds should the brightness fade for
 #define BRIGHTNESS_FADE_MILLIS 1000
+
+#define HUE_INCREMENT_EVERY_N_MILLIS 25
 
 typedef enum {
   sIdle,
