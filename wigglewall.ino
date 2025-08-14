@@ -84,7 +84,7 @@ using namespace fl;
 #define NUM_LEDS (MATRIX_WIDTH * MATRIX_HEIGHT)
 
 #define COLOR_ORDER RGB
-#define BRIGHTNESS 50
+#define BRIGHTNESS 200
 #define FIRST_ANIMATION POLAR_WAVES
 #define LED_DIAMETER 0.15  // .15 cm or 1.5mm // This is purely use for the web compiler to display the animartrix effects.
 
@@ -128,7 +128,7 @@ FxEngine fxEngine(NUM_LEDS);
 // Clark's stuff
 /////////////////////////////////////////////////////////////////////////////   
 //USE THIS TO ALLOW THE WEB COMPILER TO USE THE FULL 64x25 OUTPUT
-#define SIMULATION
+//#define SIMULATION
 #define DEBUG_MILLIS 10000
 #include "manager.h"
 Manager manager;
@@ -252,19 +252,16 @@ void loop() {
     static unsigned long endMillis = millis();
     EVERY_N_MILLIS(1000) {
 #ifdef SIMULATION
-        
-        Serial.print("FPS: ");
-        Serial.print(1000.0/float(endMillis - startMillis));
-
-        Serial.print(", draw time: ");
+        Serial.print("SIMULATION MODE!!!!");
+#endif
+        Serial.print("draw time: ");
         Serial.print(drawMillis - startMillis);
-
         Serial.print(", copy time: ");
         Serial.print(copyMillis - drawMillis);
-
-
         Serial.print(", push time: ");
-        Serial.println(endMillis - copyMillis);
+        Serial.print(endMillis - copyMillis);
+        Serial.print(", FPS: ");
+        Serial.println(1000.0/float(millis() - startMillis));
     }
     
 }
