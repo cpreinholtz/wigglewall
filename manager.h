@@ -27,6 +27,12 @@ typedef enum {
   sFadeOut
 } envelopState;
 
+typedef enum {
+  sNone,
+  sTime,
+  sHue,
+} AudioReaction;
+
 class Manager {
 public:
 
@@ -42,26 +48,52 @@ public:
 
     //speed
     float timeSpeed = 1.0;
+    float desiredSpeed = 1.0;
+
+    //hue
+    uint8_t desiredHue = 0;
+    uint8_t hueOffset = 0;
 
     // state machine
     unsigned long startMillis = 0;
     int state=sIdle;
+
+    //audio reactivity
+    int audioState = sHue;
 
     void start(){
         this->setBrightness(desiredBrightness);
         this->setPattern(currentAnimation);
     }
 
-    void run(){
+    void run(uint8_t sticky){
+        //update animation parameters periodically
         if (doAnimationUpdates) {
             EVERY_N_SECONDS(ANIMATION_UPDATE_PERIOD) trigger();
+            EVERY_N_MILLIS(HUE_INCREMENT_EVERY_N_MILLIS) desiredHue ++;
         }
 
+        //transition state machine
         if (state == sFadeOut){
             fadeOut();
         } else if (state == sFadeIn){
             fadeIn();
         }
+
+        //These can be overwritten below but for now assume no audio and set outputs = desired with no modulation
+        hueOffset = desiredHue;
+        timeSpeed = desiredSpeed;
+
+        //Audio reactivity
+        switch(audioState){
+            case sTime:
+                timeSpeed = desiredSpeed + (float(sticky)/128.0);
+                break;
+            case sHue:
+                hueOffset = desiredHue + (sticky>>3); //make 0 to 255 range lower
+                break;
+        }
+
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -159,7 +191,10 @@ public:
     // speed Updates
     /////////////////////////////////////////////////////////////////////////////
     void setSpeed(float t){
-        timeSpeed = t;
+        desiredSpeed = t;
+        if (audioState != sTime) {
+            timeSpeed = desiredSpeed;
+        }
         //Serial.print("Setting timeSpeed to: ");
         //Serial.println(timeSpeed);
     }

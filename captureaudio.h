@@ -39,7 +39,7 @@ public:
     uint8_t latchedSignal=0; //lowpass iir value
 
     unsigned long startMillis = 0; //how long has it been since the last update
-    unsigned long decayMillis = 150; //decay time total
+    unsigned long decayMillis = 250; //decay time total
 
     void update(uint8_t v){
         //pushup the latched signal if input is greater than output, capture this as the "start" of a new decay process
@@ -52,7 +52,7 @@ public:
         unsigned long elapsedMillis = millis()-startMillis;
         if (elapsedMillis < decayMillis){
             //fade from latchedSignal to 0 based on elapsedMillis
-            signal = lerp8by8(latchedSignal,0, 255*elapsedMillis/BRIGHTNESS_FADE_MILLIS);
+            signal = lerp8by8(latchedSignal,0, 255*elapsedMillis/decayMillis);
         } else {
             signal = 0.0;
         }
@@ -133,20 +133,21 @@ public:
     uint8_t highpassAndNormalize(float inputSignal, float lowpass){
 
         //simple IIR highpass by subtracting a low-pass filter's output from the original input signal
-        float highpass = inputSignal - lowpass;
+        float highpass = inputSignal - lowpass -5; // add -5 DC offset pedstl
 
         //dont bother if highpass is negative
         if (highpass <= 0 ) return 0;
 
         //now normalize these results by multiplying by a scaler and dividing by lowpass outputs
-        float equalizedScaler = 50.0;  // "average" normalized value
+        //float equalizedScaler = 50.0;  // "average" normalized value
         //because of the highpass = inputSignal - lowpass above..
         // if this sample =    average volume, then normalizedFloat = 0
         // if this sample = 2X average volume, then normalizedFloat = equalizedScaler
         // if this sample = 3X average volume, then normalizedFloat = 2x equalizedScaler
         // if this sample = 4X average volume, then normalizedFloat = 3x equalizedScaler
         // so we are really only passing values ABOVE the lowpass value
-        float normalizedFloat = equalizedScaler * highpass / lowpass;
+        //float normalizedFloat = equalizedScaler * highpass / lowpass;
+        float normalizedFloat = highpass;
 
         if (normalizedFloat > 255) return 255; //cap at max
 
@@ -183,6 +184,10 @@ public:
                 //update iir_volume for next time
                 iir_volume.update(bin0);
             }
+        #else
+            //fake a pulse every so often
+            EVERY_N_MILLIS(500) sticky.update(150);
+            sticky.update(0);
         #endif
     }
 }; 

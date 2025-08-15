@@ -129,6 +129,7 @@ FxEngine fxEngine(NUM_LEDS);
 /////////////////////////////////////////////////////////////////////////////   
 //USE THIS TO ALLOW THE WEB COMPILER TO USE THE FULL 64x25 OUTPUT
 //#define SIMULATION
+
 #define DEBUG_MILLIS 10000
 #include "manager.h"
 Manager manager;
@@ -169,8 +170,9 @@ void setup() {
 
 
 void loop() {
+
     /////////////////////////////////////////////////////////////////////////////
-    // Draw the animation
+    //update desired with sliders (simulation only)
     /////////////////////////////////////////////////////////////////////////////
     unsigned long startMillis = millis();
     EVERY_N_MILLIS(100) manager.setDesiredBrightness(brightness);
@@ -180,6 +182,22 @@ void loop() {
         lastFxIndex = fxIndex;
         manager.setPattern(fxIndex);
     }
+
+    /////////////////////////////////////////////////////////////////////////////
+    //use audio / manager values to update brightness etc for next frame
+    /////////////////////////////////////////////////////////////////////////////
+    audio.update();
+    manager.run(audio.sticky.signal);
+
+    if (manager.clearAnimationChanged()){
+        animartrix.fxSet(manager.currentAnimation);
+    }
+    FastLED.setBrightness(manager.currentBrightness);
+    fxEngine.setSpeed(manager.timeSpeed);
+
+    /////////////////////////////////////////////////////////////////////////////
+    // Render the raw animation
+    /////////////////////////////////////////////////////////////////////////////
     fxEngine.draw(millis(), ledsFull);
     static unsigned long drawMillis = millis();//////////////
 
@@ -187,13 +205,11 @@ void loop() {
     // apply hue shift
     /////////////////////////////////////////////////////////////////////////////
     CHSV hsv[NUM_LEDS];
-    static uint8_t hueOffset = 0;
     for (int y = 0; y < NUM_LEDS; y++){
         hsv[y] = rgb2hsv_approximate(ledsFull[y]);
-        hsv[y].h = hsv[y].h + hueOffset;
+        hsv[y].h = hsv[y].h + manager.hueOffset;
     }
     hsv2rgb_rainbow(hsv, ledsFull, NUM_LEDS);
-    EVERY_N_MILLIS(HUE_INCREMENT_EVERY_N_MILLIS) hueOffset++;  //increment period defined in manager class
 
     /////////////////////////////////////////////////////////////////////////////
     // Debug creating a solid gradient at power on to visually test mapping
@@ -208,6 +224,7 @@ void loop() {
             }
         }
     }
+
     /////////////////////////////////////////////////////////////////////////////
     // Split the image into its output pins and associated leds variables
     /////////////////////////////////////////////////////////////////////////////
@@ -239,30 +256,19 @@ void loop() {
         }
     }
 
+    /////////////////////////////////////////////////////////////////////////////
+    //show frame
+    /////////////////////////////////////////////////////////////////////////////
     unsigned long copyMillis = millis();//////////////
     FastLED.show();
     unsigned long pushMillis = millis();
 
     /////////////////////////////////////////////////////////////////////////////
-    //use audio / manager values to update brightness etc for next frame
-    /////////////////////////////////////////////////////////////////////////////
-    audio.update();
-    manager.run();
-
-    if (manager.clearAnimationChanged()){
-        animartrix.fxSet(manager.currentAnimation);
-
-    }
-    FastLED.setBrightness(manager.currentBrightness);
-    fxEngine.setSpeed(manager.timeSpeed);
-
-
-    /////////////////////////////////////////////////////////////////////////////
     //debug only
     /////////////////////////////////////////////////////////////////////////////
-    EVERY_N_MILLIS(50) {
+    EVERY_N_MILLIS(1) {
         #ifdef SIMULATION
-            Serial.print("SIMULATION MODE!!!!");
+            Serial.print("SIMULATION_MODE");
         #endif
 
         //Serial.print("drawTime:");
