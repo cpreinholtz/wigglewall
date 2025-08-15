@@ -39,7 +39,7 @@ public:
     uint8_t latchedSignal=0; //lowpass iir value
 
     unsigned long startMillis = 0; //how long has it been since the last update
-    unsigned long decayMillis = 500; //decay time total
+    unsigned long decayMillis = 150; //decay time total
 
     void update(uint8_t v){
         //pushup the latched signal if input is greater than output, capture this as the "start" of a new decay process
@@ -104,7 +104,7 @@ public:
 
     void start(){
         #ifdef USE_AUDIO
-            fft256_1.averageTogether(3); //runs at 300Hz+, lets slow that down to ~ 100 hz
+            fft256_1.averageTogether(2); //runs at 300Hz+, lets slow that down to ~ 200 hz
             AudioMemory(50);
             amp1.gain(20); // amplify sign to useful range
         #endif
@@ -116,14 +116,14 @@ public:
         Serial.print(bin0);
         Serial.print(",");
 
-        Serial.print("normalizedSignal:");
-        Serial.print(normalizedSignal);
-        Serial.print(",");
-        
         Serial.print("volume:");
         Serial.print(iir_volume.signal);
         Serial.print(",");
-        
+
+        Serial.print("normalizedSignal:");
+        Serial.print(normalizedSignal);
+        Serial.print(",");
+              
         Serial.print("sticky:");
         Serial.print(sticky.signal);
         Serial.print(",");
@@ -161,17 +161,25 @@ public:
             if (fft256_1.available()){
 
                 //get latest reults from bin 0 (low frequency)
-                bin0 = fft256_1.read(0);
+                //bin0 = 100.0*(fft256_1.read(0)+fft256_1.read(1)+fft256_1.read(2));
+                bin0 = 100.0*fft256_1.read(0);
 
                 //sanitize clip below 0
                 if (bin0 < 0) bin0 = 0;
 
+                ////////////////////////////////////////////////////
                 //normalize and convert to uint8_t
                 normalizedSignal = this->highpassAndNormalize(bin0, iir_volume.signal);
 
                 //send normalized signal through the PushUpDecay
                 sticky.update(normalizedSignal);
 
+                ////////////////////////////////////
+                //try un normalised signal, just scaled above
+                //if (bin0>255) sticky.update(255);
+                //else sticky.update(uint8_t(bin0));
+
+                ////////////////////////////////////////////////////
                 //update iir_volume for next time
                 iir_volume.update(bin0);
             }

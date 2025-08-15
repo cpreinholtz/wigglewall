@@ -260,7 +260,7 @@ void loop() {
     /////////////////////////////////////////////////////////////////////////////
     //debug only
     /////////////////////////////////////////////////////////////////////////////
-    EVERY_N_MILLIS(1000) {
+    EVERY_N_MILLIS(50) {
         #ifdef SIMULATION
             Serial.print("SIMULATION MODE!!!!");
         #endif
@@ -277,9 +277,9 @@ void loop() {
         //Serial.print(pushMillis - copyMillis);
         //Serial.print(",");
 
-        Serial.print("otherTime:");
-        Serial.print(millis() - pushMillis);
-        Serial.print(",");
+        //Serial.print("otherTime:");
+        //Serial.print(millis() - pushMillis);
+        //Serial.print(",");
 
         audio.debug();
 
