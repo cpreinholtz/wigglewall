@@ -78,6 +78,7 @@ using namespace fl;
 
 
 //NOTE REQUIRES REDEFINING THE radial_filter_radius:::       if (w > h) { this->radial_filter_radius = int(float(w)*23.0/32.0); } else { this->radial_filter_radius = int(float(h)*23.0/32.0); }
+// AND requires changing radius = 23 to radius = radial_filter_radius in a few spots.
 // AND requires fastled master branch for non square fixes.  This is the commit I am currently on during development: 2ff981b7d
 #define MATRIX_WIDTH 64
 #define MATRIX_HEIGHT 25
@@ -119,7 +120,7 @@ XYMap xyMap_pin = XYMap::constructWithUserFunction(PANNEL_WIDTH, PANNEL_HEIGHT, 
 // Clark's stuff
 /////////////////////////////////////////////////////////////////////////////   
 //USE THIS TO ALLOW THE WEB COMPILER TO USE THE FULL 64x25 OUTPUT
-#define SIMULATION
+//#define SIMULATION
 
 #define DEBUG_MILLIS 2000
 #include "manager.h"
