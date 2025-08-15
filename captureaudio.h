@@ -13,15 +13,18 @@ License CC BY-NC 3.0
 #pragma once
 
 #ifndef SIMULATION
-    #include <Audio.h>
-    //include this^&@
-    AudioInputI2S2            audioSource;           //xy=698,360
-    AudioAnalyzeFFT256       fft256_1;       //xy=1152,492
-    AudioAmplifier           amp1;           //xy=470,93
-    AudioConnection          patchCord0(audioSource, 0, amp1, 0);
-    AudioConnection          patchCord2(amp1, 0, fft256_1, 0);
-
+    //remove this if you want to skip audio processing
     #define USE_AUDIO
+
+    #ifdef USE_AUDIO
+        #include <Audio.h>
+        AudioInputI2S2            audioSource;           //xy=698,360
+        AudioAnalyzeFFT256       fft256_1;       //xy=1152,492
+        AudioAmplifier           amp1;           //xy=470,93
+        AudioConnection          patchCord0(audioSource, 0, amp1, 0);
+        AudioConnection          patchCord2(amp1, 0, fft256_1, 0);
+    #endif
+
 #endif
 
 

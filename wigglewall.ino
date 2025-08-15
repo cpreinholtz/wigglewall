@@ -162,6 +162,7 @@ void setup() {
     screen_mapFull.setDiameter(LED_DIAMETER);
     FastLED.addLeds<WS2812, LED_PIN, COLOR_ORDER>(ledsFull, NUM_LEDS).setCorrection(TypicalLEDStrip).setScreenMap(screen_mapFull);
 #endif
+    audio.start();
 }
 
 
@@ -171,7 +172,7 @@ void loop() {
     /////////////////////////////////////////////////////////////////////////////
     // Draw the animation
     /////////////////////////////////////////////////////////////////////////////
-    static unsigned long startMillis = millis();
+    unsigned long startMillis = millis();
     EVERY_N_MILLIS(100) manager.setDesiredBrightness(brightness);
     EVERY_N_MILLIS(100) manager.setSpeed(timeSpeed);
     static int lastFxIndex = -1;
@@ -238,9 +239,9 @@ void loop() {
         }
     }
 
-    static unsigned long copyMillis = millis();//////////////
+    unsigned long copyMillis = millis();//////////////
     FastLED.show();
-    static unsigned long pushMillis = millis();
+    unsigned long pushMillis = millis();
 
     /////////////////////////////////////////////////////////////////////////////
     //use audio / manager values to update brightness etc for next frame
@@ -259,7 +260,7 @@ void loop() {
     /////////////////////////////////////////////////////////////////////////////
     //debug only
     /////////////////////////////////////////////////////////////////////////////
-    EVERY_N_MILLIS(100) {
+    EVERY_N_MILLIS(1000) {
         #ifdef SIMULATION
             Serial.print("SIMULATION MODE!!!!");
         #endif
@@ -283,7 +284,7 @@ void loop() {
         audio.debug();
 
         Serial.print("FPS:");
-        Serial.println(1000.0/float(millis() - startMillis));
+        Serial.print(1000.0/float(millis() - startMillis));
         Serial.print(",");
 
         Serial.println();
