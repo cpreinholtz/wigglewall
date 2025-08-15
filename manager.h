@@ -28,10 +28,10 @@ typedef enum {
 } envelopState;
 
 typedef enum {
-  sNone,
   sTime,
   sHue,
   sBrightness,
+  sNone, //keep last
 } AudioReaction;
 
 class Manager {
@@ -60,7 +60,7 @@ public:
     int state=sIdle;
 
     //audio reactivity
-    int audioState = sBrightness;
+    int audioState = sHue;
 
     void start(){
         this->setBrightness(desiredBrightness);
@@ -74,8 +74,6 @@ public:
             EVERY_N_MILLIS(HUE_INCREMENT_EVERY_N_MILLIS) desiredHue ++;
         }
 
-
-
         //These can be overwritten below but for now assume no audio and set outputs = desired with no modulation
         hueOffset = desiredHue;
         timeSpeed = desiredSpeed;
@@ -84,13 +82,13 @@ public:
         //Audio reactivity
         switch(audioState){
             case sTime:
-                timeSpeed = desiredSpeed + (float(sticky)/128.0);
+                timeSpeed = desiredSpeed + (float(sticky)/32.0); //make 0 to 255 range higher than 0 to 1
                 break;
             case sHue:
                 hueOffset = desiredHue + (sticky>>3); //make 0 to 255 range lower
                 break;
             case sBrightness:
-                setBrightness(desiredBrightness + (sticky>>3));
+                setBrightness(desiredBrightness + (sticky>>2));
                 break;
         }
 
@@ -116,6 +114,11 @@ public:
                 randomPattern();
             }
         }
+    }
+
+    void setModulation(int m){
+        if (m > sNone || m < 0) m = sNone;
+        audioState = m;
     }
 
 

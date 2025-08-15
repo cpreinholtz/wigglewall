@@ -114,15 +114,6 @@ FASTLED_FORCE_INLINE uint16_t xy_serpentine_vertical(uint16_t x, uint16_t y,
 XYMap xyMap_pin = XYMap::constructWithUserFunction(PANNEL_WIDTH, PANNEL_HEIGHT, xy_serpentine_vertical);
 
 
-/////////////////////////////////////////////////////////////////////////////
-
-
-UISlider brightness("Brightness", BRIGHTNESS, 0, 255, 1);
-UISlider fxIndex("Animation", 0, 0, NUM_ANIMATIONS - 1, 1);
-UISlider timeSpeed("Time Speed", 1, -10, 10, .1);
-
-Animartrix animartrix(xyMapFull, FIRST_ANIMATION);
-FxEngine fxEngine(NUM_LEDS);
 
 /////////////////////////////////////////////////////////////////////////////
 // Clark's stuff
@@ -137,6 +128,16 @@ Manager manager;
 #include "captureaudio.h"
 CaptureAudio audio;
 
+/////////////////////////////////////////////////////////////////////////////
+Animartrix animartrix(xyMapFull, FIRST_ANIMATION);
+FxEngine fxEngine(NUM_LEDS);
+
+UISlider modulation("Modulation", 0, 0, sNone, 1);
+UISlider fxIndex("Animation", 0, 0, NUM_ANIMATIONS - 1, 1);
+UISlider brightness("Brightness", BRIGHTNESS, 0, 255, 1);
+UISlider timeSpeed("Time Speed", 1, -10, 10, .1);
+
+UIGroup waveSimControls("Simulation", brightness, timeSpeed, fxIndex, modulation);
 
 void setup() {
 
@@ -177,6 +178,7 @@ void loop() {
     unsigned long startMillis = millis();
     EVERY_N_MILLIS(100) manager.setDesiredBrightness(brightness);
     EVERY_N_MILLIS(100) manager.setSpeed(timeSpeed);
+    EVERY_N_MILLIS(100) manager.setModulation(modulation);
     static int lastFxIndex = -1;
     if (fxIndex.value() != lastFxIndex) {
         lastFxIndex = fxIndex;
