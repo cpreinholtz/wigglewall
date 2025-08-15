@@ -15,6 +15,7 @@ License CC BY-NC 3.0
 
 // how many seconds between swapping animations
 #define ANIMATION_UPDATE_PERIOD 105
+//#define ANIMATION_UPDATE_PERIOD 10
 
 // how many seconds should the brightness fade for
 #define BRIGHTNESS_FADE_MILLIS 1000
@@ -82,7 +83,7 @@ public:
         //Audio reactivity
         switch(audioState){
             case sTime:
-                timeSpeed = desiredSpeed + (float(sticky)/32.0); //make 0 to 255 range higher than 0 to 1
+                timeSpeed = desiredSpeed + (float(sticky)/55.0); //make 0 to 255 range higher than 0 to 1
                 break;
             case sHue:
                 hueOffset = desiredHue + (sticky>>3); //make 0 to 255 range lower
@@ -116,12 +117,6 @@ public:
         }
     }
 
-    void setModulation(int m){
-        if (m > sNone || m < 0) m = sNone;
-        audioState = m;
-    }
-
-
     // fade from desiredBrightness to 0, then change animations and transition to sFadeIn
     void fadeOut(){
         unsigned long elapsedMillis = millis()-startMillis;
@@ -130,6 +125,7 @@ public:
         } else {
             setBrightness(0);
             randomPattern();
+            randomModulation();
             state = sFadeIn;
             startMillis = millis();
             //Serial.println("done1");
@@ -192,6 +188,15 @@ public:
         } else {
             return false;
         }
+    }
+    // set modulation destination
+    void setModulation(int m){
+        if (m > sNone || m < 0) m = sNone;
+        audioState = m;
+    }
+    // randomly set modulation destination
+    void randomModulation(){
+        setModulation(random(sNone));
     }
 
 

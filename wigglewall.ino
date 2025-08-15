@@ -121,7 +121,7 @@ XYMap xyMap_pin = XYMap::constructWithUserFunction(PANNEL_WIDTH, PANNEL_HEIGHT, 
 //USE THIS TO ALLOW THE WEB COMPILER TO USE THE FULL 64x25 OUTPUT
 #define SIMULATION
 
-#define DEBUG_MILLIS 10000
+#define DEBUG_MILLIS 2000
 #include "manager.h"
 Manager manager;
 
@@ -178,7 +178,11 @@ void loop() {
     unsigned long startMillis = millis();
     EVERY_N_MILLIS(100) manager.setDesiredBrightness(brightness);
     EVERY_N_MILLIS(100) manager.setSpeed(timeSpeed);
-    EVERY_N_MILLIS(100) manager.setModulation(modulation);
+    static int lastModulationIndex = -1;
+    if (modulation.value() != lastModulationIndex) {
+        lastModulationIndex = modulation;
+        manager.setModulation(modulation);
+    }
     static int lastFxIndex = -1;
     if (fxIndex.value() != lastFxIndex) {
         lastFxIndex = fxIndex;
