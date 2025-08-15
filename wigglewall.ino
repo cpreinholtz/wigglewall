@@ -128,7 +128,7 @@ FxEngine fxEngine(NUM_LEDS);
 // Clark's stuff
 /////////////////////////////////////////////////////////////////////////////   
 //USE THIS TO ALLOW THE WEB COMPILER TO USE THE FULL 64x25 OUTPUT
-//#define SIMULATION
+#define SIMULATION
 
 #define DEBUG_MILLIS 10000
 #include "manager.h"
@@ -266,7 +266,7 @@ void loop() {
     /////////////////////////////////////////////////////////////////////////////
     //debug only
     /////////////////////////////////////////////////////////////////////////////
-    EVERY_N_MILLIS(1) {
+    EVERY_N_MILLIS(100) {
         #ifdef SIMULATION
             Serial.print("SIMULATION_MODE");
         #endif

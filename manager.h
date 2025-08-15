@@ -31,6 +31,7 @@ typedef enum {
   sNone,
   sTime,
   sHue,
+  sBrightness,
 } AudioReaction;
 
 class Manager {
@@ -59,7 +60,7 @@ public:
     int state=sIdle;
 
     //audio reactivity
-    int audioState = sHue;
+    int audioState = sBrightness;
 
     void start(){
         this->setBrightness(desiredBrightness);
@@ -73,16 +74,12 @@ public:
             EVERY_N_MILLIS(HUE_INCREMENT_EVERY_N_MILLIS) desiredHue ++;
         }
 
-        //transition state machine
-        if (state == sFadeOut){
-            fadeOut();
-        } else if (state == sFadeIn){
-            fadeIn();
-        }
+
 
         //These can be overwritten below but for now assume no audio and set outputs = desired with no modulation
         hueOffset = desiredHue;
         timeSpeed = desiredSpeed;
+        setBrightness(desiredBrightness);
 
         //Audio reactivity
         switch(audioState){
@@ -92,6 +89,16 @@ public:
             case sHue:
                 hueOffset = desiredHue + (sticky>>3); //make 0 to 255 range lower
                 break;
+            case sBrightness:
+                setBrightness(desiredBrightness + (sticky>>3));
+                break;
+        }
+
+        //transition state machine can overwrite audio brightness
+        if (state == sFadeOut){
+            fadeOut();
+        } else if (state == sFadeIn){
+            fadeIn();
         }
 
     }
@@ -155,8 +162,6 @@ public:
         if (state == sIdle) {
             setBrightness(desiredBrightness);
         }
-        //Serial.print("Setting desired brightness to: ");
-        //Serial.println(b);
     }
 
 
