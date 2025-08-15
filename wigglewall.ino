@@ -133,6 +133,10 @@ FxEngine fxEngine(NUM_LEDS);
 #include "manager.h"
 Manager manager;
 
+#include "captureaudio.h"
+CaptureAudio audio;
+
+
 void setup() {
 
     fxEngine.addFx(animartrix);
@@ -222,7 +226,7 @@ void loop() {
         }
     }
     /////////////////////////////////////////////////////////////////////////////
-    // Debug by counting pannels and lighting up first N leds in each pannel
+    // Debug by counting panels and lighting up first N leds in each panel
     // Show the results!!!
     /////////////////////////////////////////////////////////////////////////////
     if (millis() < DEBUG_MILLIS){
@@ -236,10 +240,12 @@ void loop() {
 
     static unsigned long copyMillis = millis();//////////////
     FastLED.show();
+    static unsigned long pushMillis = millis();
 
     /////////////////////////////////////////////////////////////////////////////
-    //use manager values to update brightness etc for next frame
+    //use audio / manager values to update brightness etc for next frame
     /////////////////////////////////////////////////////////////////////////////
+    audio.update();
     manager.run();
 
     if (manager.clearAnimationChanged()){
@@ -249,19 +255,38 @@ void loop() {
     FastLED.setBrightness(manager.currentBrightness);
     fxEngine.setSpeed(manager.timeSpeed);
 
-    static unsigned long endMillis = millis();
-    EVERY_N_MILLIS(1000) {
-#ifdef SIMULATION
-        Serial.print("SIMULATION MODE!!!!");
-#endif
-        Serial.print("draw time: ");
-        Serial.print(drawMillis - startMillis);
-        Serial.print(", copy time: ");
-        Serial.print(copyMillis - drawMillis);
-        Serial.print(", push time: ");
-        Serial.print(endMillis - copyMillis);
-        Serial.print(", FPS: ");
+
+    /////////////////////////////////////////////////////////////////////////////
+    //debug only
+    /////////////////////////////////////////////////////////////////////////////
+    EVERY_N_MILLIS(100) {
+        #ifdef SIMULATION
+            Serial.print("SIMULATION MODE!!!!");
+        #endif
+
+        //Serial.print("drawTime:");
+        //Serial.print(drawMillis - startMillis);
+        //Serial.print(",");
+
+        //Serial.print(", copyTime:");
+        //Serial.print(copyMillis - drawMillis);
+        //Serial.print(",");
+
+        //Serial.print("pushTime:");
+        //Serial.print(pushMillis - copyMillis);
+        //Serial.print(",");
+
+        Serial.print("otherTime:");
+        Serial.print(millis() - pushMillis);
+        Serial.print(",");
+
+        audio.debug();
+
+        Serial.print("FPS:");
         Serial.println(1000.0/float(millis() - startMillis));
+        Serial.print(",");
+
+        Serial.println();
     }
     
 }
